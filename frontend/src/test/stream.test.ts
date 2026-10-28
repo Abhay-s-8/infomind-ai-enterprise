@@ -60,6 +60,17 @@ test("HTTP errors before streaming starts use the standard error format", async 
   await expect(collect(new Response(JSON.stringify({ error: { message: "Conversation not found" } }), { status: 404 }))).rejects.toMatchObject({ status: 404, message: "Conversation not found" });
 });
 
+test("an API base polluted with a byte-order mark, spaces or a trailing slash is cleaned, not treated as a relative path", async () => {
+  vi.stubEnv("VITE_API_BASE", "﻿ https://api.example.com/api/v1/ ");
+  vi.resetModules();
+  const { api: fresh } = await import("../lib/api");
+  const fetchMock = vi.fn().mockResolvedValue(streamResponse([enc.encode(sse("done", DONE))]));
+  vi.stubGlobal("fetch", fetchMock);
+  await fresh.chatStream("q", undefined, () => {});
+  expect(fetchMock.mock.calls[0][0]).toBe("https://api.example.com/api/v1/chat/stream");
+  vi.unstubAllEnvs();
+});
+
 test("an unreachable server gives the friendly message", async () => {
   vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
   await expect(api.chatStream("q", undefined, () => {})).rejects.toMatchObject({ status: 0, message: expect.stringContaining("Cannot reach the server") });

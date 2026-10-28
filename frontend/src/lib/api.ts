@@ -3,7 +3,9 @@ import type {
   DocumentsAnalytics, ModelInfo, Overview, ReviewItem, SearchAnalytics, SearchMode, SearchResponse, SystemModels, UploadBatch, User,
 } from "../types";
 
-const BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? "/api/v1";
+// Hosting dashboards and shells sometimes add a byte-order mark or whitespace to pasted values; either would turn an
+// absolute URL into a relative one, so both are removed.
+const BASE = (((import.meta.env.VITE_API_BASE as string | undefined) ?? "").replace(/^﻿/, "").trim().replace(/\/+$/, "")) || "/api/v1";
 const TOKEN_KEY = "infomind.token";
 
 export class ApiError extends Error {

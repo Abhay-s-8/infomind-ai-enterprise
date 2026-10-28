@@ -12,3 +12,5 @@ models/*
 !models/.gitkeep
 data/evaluation/*
 !data/evaluation/.gitkeep
+
+.vercel
