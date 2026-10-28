@@ -104,4 +104,6 @@ OCR via Tesseract, server-pushed status events for document processing (instead 
 
 Full explanation with flowcharts of every data flow: [docs/PROJECT_EXPLAINED.md](docs/PROJECT_EXPLAINED.md).
 
+Contributions are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md). Licensed under the [MIT License](LICENSE).
+
 Troubleshooting: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
