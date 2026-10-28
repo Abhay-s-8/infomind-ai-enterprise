@@ -4,6 +4,7 @@ Live, authoritative OpenAPI at `http://localhost:8000/docs` (development only). 
 
 | Method & path | Auth | Notes |
 |---|---|---|
+| GET `/auth/config` | public | `{"registration_enabled": bool}`; the web pages use it to show "Create account" only when sign-up is open |
 | POST `/auth/register` | public (if enabled) | creates an **analyst**; password ≥ 10 chars; rate-limited |
 | POST `/auth/login` · POST `/auth/logout` · GET `/auth/me` | public / user | login failures are audited; generic error message |
 | GET `/users` · PATCH `/users/{id}/role` | admin | cannot demote self |

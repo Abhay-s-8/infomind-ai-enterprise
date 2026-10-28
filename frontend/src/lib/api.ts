@@ -112,6 +112,7 @@ const qs = (params: Record<string, string | number | undefined | null>) => {
 const json = (body: unknown) => ({ method: "POST", body: JSON.stringify(body) });
 
 export const api = {
+  authConfig: () => request<{ registration_enabled: boolean }>("/auth/config", {}, false),
   login: (email: string, password: string) => request<{ access_token: string }>("/auth/login", json({ email, password }), false),
   register: (email: string, password: string, full_name: string) => request<User>("/auth/register", json({ email, password, full_name }), false),
   me: () => request<User>("/auth/me"),

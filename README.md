@@ -13,6 +13,7 @@ Organisations accumulate documents that are hard to organise, find and interroga
 - TF-IDF + Logistic Regression vs Linear SVM, held-out evaluation, versioned models, low-confidence → review queue; human labels are stored separately and never overwritten.
 - Keyword, semantic and hybrid search with category / file type / date filters, pagination and highlighting.
 - RAG assistant: authorized retrieval, evidence-sufficiency gate, injection defences, citations validated against retrieved chunks, conversation persistence with owner-only access. Answers **stream** to the UI word by word (Server-Sent Events, `POST /chat/stream`) with a Stop button; text is shown only after its citations have been validated, and the saved message replaces the streamed text when it finishes.
+- A public landing page at `/` for visitors (features, how it works, an illustrative answer), with separate `/login` and `/register` pages; "Create account" appears only while the server has `ENABLE_REGISTRATION=true` (`GET /auth/config`). Signed-in users go straight to their first page.
 - Rule-based entity extraction (dates, money, times, emails) plus optional spaCy NER.
 - Role-based access (admin / analyst / reviewer) enforced on the backend; audit log.
 - Dashboard + analytics from real records; each panel labelled measured / offline-evaluation / synthetic.
@@ -67,7 +68,7 @@ Ollama stays on the Windows host (GPU passthrough to Docker on Windows is not as
 - If the PostgreSQL password contains `@`, `:`, `/` or `%`, also set `DATABASE_URL` in `.env` with the password percent-encoded (`@` → `%40`).
 
 ### Hosting (Render API + Vercel web interface)
-`render.yaml` (free web service + free PostgreSQL, no card; the database expires after 30 days, original files and the search index are rebuilt or lost on restart) and `render.paid.yaml` (persistent disk, needs a payment method) with [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) describe a hosted setup. Ollama cannot run on Render, so the hosted version has no AI assistant and uses the lexical hash embedder; everything else works. Both blueprints pass Render's validator (the paid one only asks for a card) and the production image was run locally; the service has not yet been created on Render.
+`render.yaml` (free web service + free PostgreSQL, no card; the database expires after 30 days, original files and the search index are rebuilt or lost on restart) and `render.paid.yaml` (persistent disk, needs a payment method) with [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) describe a hosted setup. Ollama cannot run on Render, so the hosted version has no AI assistant and uses the lexical hash embedder; everything else works. Both blueprints pass Render's validator (the paid one only asks for a card) and the production image was run locally. The API is running on Render's free plan and the web interface on Vercel (see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)).
 
 ## 6. Demonstration procedure
 1. Log in as the admin. **Classification → Train on synthetic data** (or `python -m app.cli train`).
@@ -82,7 +83,7 @@ Ollama stays on the Windows host (GPU passthrough to Docker on Windows is not as
 ```powershell
 .\scripts\test.ps1       # ruff + pytest (backend), tsc + vitest (frontend)
 ```
-Last run on this machine: backend **89 passed**, `ruff` clean; frontend **28 passed**, `tsc` clean. Tests use SQLite, embedded Qdrant, the hashing embedder and a scripted fake LLM — no model downloads.
+Last run on this machine: backend **91 passed**, `ruff` clean; frontend **36 passed**, `tsc` clean. Tests use SQLite, embedded Qdrant, the hashing embedder and a scripted fake LLM — no model downloads.
 
 **Also verified on this machine (2026-10-28):**
 - `docker compose up --build`: all five containers (PostgreSQL 16, Qdrant, API, worker, frontend) build and run. The API container runs `alembic upgrade head` against PostgreSQL (revision `0001`, 16 tables), the admin is seeded, 14 demo documents reach `completed` through the worker with real `nomic-embed-text` embeddings, and `/health/ready` reports database, vector store and Ollama OK.

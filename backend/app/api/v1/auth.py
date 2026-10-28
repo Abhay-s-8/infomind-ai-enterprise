@@ -18,6 +18,12 @@ router = APIRouter(tags=["auth"])
 _DUMMY_HASH = hash_password("not-a-real-password")
 
 
+@router.get("/auth/config")
+def auth_config():
+    """Public. Lets the web pages offer "Create account" only when this server accepts registrations."""
+    return {"registration_enabled": get_settings().enable_registration}
+
+
 @router.post("/auth/register", response_model=UserOut, status_code=201, dependencies=[rate_limit("register", 10)])
 def register(body: RegisterIn, request: Request, db: Session = Depends(get_db)):
     if not get_settings().enable_registration:

@@ -1,6 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
 import type { z } from "zod";
 import { Button, Field, Input } from "../../components/ui";
 import { api } from "../../lib/api";
@@ -9,9 +11,15 @@ import { loginSchema, registerSchema } from "../../lib/utils";
 
 type FormValues = z.infer<typeof registerSchema>;
 
-export default function LoginPage() {
+type Mode = "login" | "register";
+
+export default function LoginPage({ initialMode = "login" }: { initialMode?: Mode }) {
   const { login } = useAuth();
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const config = useQuery({ queryKey: ["auth-config"], queryFn: api.authConfig, retry: 1, staleTime: 60_000 });
+  const registrationOpen = config.data?.registration_enabled === true;
+  const registrationClosed = config.data?.registration_enabled === false;
+  const [wanted, setWanted] = useState<Mode>(initialMode);
+  const mode: Mode = registrationClosed ? "login" : wanted; // a closed server never shows the sign-up form
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({
@@ -25,7 +33,7 @@ export default function LoginPage() {
       if (mode === "register") {
         await api.register(v.email, v.password, v.full_name ?? "");
         setNotice("Account created. You can sign in now.");
-        setMode("login");
+        setWanted("login");
       } else {
         await login(v.email, v.password);
       }
@@ -37,6 +45,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-full items-center justify-center p-4">
       <div className="w-full max-w-sm rounded-lg border border-border bg-surface p-6">
+        <Link to="/" className="mb-4 inline-block text-xs text-muted hover:text-fg">← Back to home</Link>
         <h1 className="text-lg font-semibold">InfoMind AI Enterprise</h1>
         <p className="mb-5 mt-1 text-sm text-muted">{mode === "login" ? "Sign in to your workspace" : "Create an analyst account"}</p>
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
@@ -51,9 +60,14 @@ export default function LoginPage() {
           {notice && <p role="status" className="text-sm text-ok">{notice}</p>}
           <Button type="submit" loading={isSubmitting} className="w-full">{mode === "login" ? "Sign in" : "Create account"}</Button>
         </form>
-        <button className="mt-4 text-sm text-accent underline" onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(null); }}>
-          {mode === "login" ? "Need an account? Register" : "Have an account? Sign in"}
-        </button>
+        {(registrationOpen || mode === "register") && (
+          <button className="mt-4 text-sm text-accent underline" onClick={() => { setWanted(mode === "login" ? "register" : "login"); setError(null); }}>
+            {mode === "login" ? "Need an account? Register" : "Have an account? Sign in"}
+          </button>
+        )}
+        {registrationClosed && (
+          <p className="mt-4 text-sm text-muted">{initialMode === "register" ? "Registration is closed on this site. " : ""}New accounts are created by an administrator.</p>
+        )}
         <p className="mt-6 text-xs text-muted">Educational prototype. Use synthetic or public data only.</p>
       </div>
     </div>

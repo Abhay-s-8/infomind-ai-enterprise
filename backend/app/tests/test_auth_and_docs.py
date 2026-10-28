@@ -13,6 +13,17 @@ def test_health_is_public(client):
     assert ready["ollama"]["ok"] is False  # no Ollama in tests; app still serves
 
 
+def test_auth_config_is_public_and_follows_the_registration_setting(client, monkeypatch):
+    from app.core.config import get_settings
+
+    r = client.get("/api/v1/auth/config")  # no token needed: the landing page asks before anyone has signed in
+    assert r.status_code == 200 and r.json() == {"registration_enabled": True}
+    monkeypatch.setattr(get_settings(), "enable_registration", False)
+    assert client.get("/api/v1/auth/config").json() == {"registration_enabled": False}
+    closed = client.post("/api/v1/auth/register", json={"email": "x@example.com", "password": "a-long-password"})
+    assert closed.status_code == 403 and closed.json()["error"]["code"] == "registration_disabled"
+
+
 def test_register_login_me(client):
     r = client.post("/api/v1/auth/register", json={"email": "New@Example.com", "password": "a-long-password"})
     assert r.status_code == 201 and r.json()["role"] == "analyst"

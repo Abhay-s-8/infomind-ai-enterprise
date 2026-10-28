@@ -3,15 +3,16 @@ import {
   BarChart3, BotMessageSquare, ClipboardCheck, FileText, LayoutDashboard, LogOut, Menu, Moon, ScrollText, Search,
   Settings, Sun, Tags, X,
 } from "lucide-react";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { useTheme } from "../lib/theme";
 import { cn } from "../lib/utils";
 import type { Role } from "../types";
 
 const NAV: { to: string; label: string; icon: typeof FileText; roles?: Role[] }[] = [
-  { to: "/", label: "Overview", icon: LayoutDashboard, roles: ["analyst"] },
+  { to: "/overview", label: "Overview", icon: LayoutDashboard, roles: ["analyst"] },
   { to: "/documents", label: "Documents", icon: FileText, roles: ["analyst"] },
   { to: "/assistant", label: "AI Assistant", icon: BotMessageSquare, roles: ["analyst"] },
   { to: "/search", label: "Semantic Search", icon: Search, roles: ["analyst"] },
@@ -21,17 +22,6 @@ const NAV: { to: string; label: string; icon: typeof FileText; roles?: Role[] }[
   { to: "/audit", label: "Audit Logs", icon: ScrollText, roles: [] },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
-
-function useTheme() {
-  const [theme, setTheme] = useState<"dark" | "light">(() => {
-    try { return (localStorage.getItem("infomind.theme") as "dark" | "light") || "dark"; } catch { return "dark"; }
-  });
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    try { localStorage.setItem("infomind.theme", theme); } catch { /* ignore */ }
-  }, [theme]);
-  return [theme, () => setTheme((t) => (t === "dark" ? "light" : "dark"))] as const;
-}
 
 export default function Layout() {
   const { user, logout, can } = useAuth();
@@ -64,7 +54,7 @@ export default function Layout() {
         </div>
         <nav aria-label="Primary" className="space-y-1 p-3">
           {items.map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} end={to === "/"} onClick={() => setOpen(false)}
+            <NavLink key={to} to={to} onClick={() => setOpen(false)}
               className={({ isActive }) => cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors", isActive ? "bg-accent/15 text-accent" : "text-muted hover:bg-raised hover:text-fg")}>
               <Icon className="h-4 w-4" aria-hidden /> {label}
             </NavLink>
