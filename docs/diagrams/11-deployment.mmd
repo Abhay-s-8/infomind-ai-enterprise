@@ -1,0 +1,18 @@
+flowchart LR
+  subgraph LOCAL["On your computer: Docker Compose"]
+    LB["Browser<br/>localhost:5173"] --> LF["frontend container<br/>Vite server, proxies /api"]
+    LF --> LBE["backend container<br/>FastAPI on port 8000"]
+    LW["worker container<br/>same code, runs the job loop"] --> LPG
+    LBE --> LPG[("postgres:16")]
+    LBE --> LQ[("qdrant v1.12.4")]
+    LW --> LQ
+    LBE --> LV[("shared volume<br/>uploads and model files")]
+    LBE -. "host.docker.internal:11434" .-> LO["Ollama on Windows<br/>uses the GPU"]
+    LW -. "embeddings" .-> LO
+  end
+  subgraph LIVE["On the internet: free hosting"]
+    VB["Browser"] --> VV["Vercel<br/>static React build<br/>infomind-ai-enterprise.vercel.app"]
+    VV -- "HTTPS + CORS<br/>only the Vercel address is allowed" --> RA["Render free web service<br/>infomind-api.onrender.com<br/>FastAPI + in-process worker<br/>embedded Qdrant in /tmp"]
+    RA --> RP[("Render free PostgreSQL<br/>users, documents, text, audit")]
+    RA -. "Ollama cannot run here" .-> NO["AI assistant is off<br/>search uses the lexical hash embedder"]
+  end

@@ -1,0 +1,30 @@
+flowchart TD
+  U["User picks up to 20 files<br/>POST /documents"] --> V{"Checks in the API:<br/>not empty, size limit, allowed type,<br/>MIME matches, real file structure"}
+  V -- "any check fails" --> E1["Refused with a clear reason<br/>audited as a failure"]
+  V -- "all pass" --> H["Compute the SHA-256 fingerprint"]
+  H --> D{"Same owner and same<br/>fingerprint already stored?"}
+  D -- "yes" --> DUP["Return the existing document<br/>marked as duplicate"]
+  D -- "no" --> S["Save the file under a random id<br/>the file name is only a label"]
+  S --> R["Insert a documents row (uploaded)<br/>Insert a processing_jobs row (pending)<br/>status becomes queued"]
+  R --> W["Worker claims the job<br/>one atomic UPDATE where status is pending"]
+  W --> X["extracting: read PDF, DOCX, XLSX, CSV or TXT<br/>and clean the text"]
+  X --> Xq{"Any text found?"}
+  Xq -- "no" --> F1["failed: no extractable text<br/>scanned files need OCR, which is not built"]
+  Xq -- "yes" --> C["chunking: passages of about 900 characters<br/>with 120 overlap, never across pages<br/>saved as document_chunks rows"]
+  C --> EM["embedding: turn each chunk into a vector<br/>delete old vectors, upsert into Qdrant"]
+  EM --> Eq{"Embedding service<br/>and Qdrant reachable?"}
+  Eq -- "no" --> EW["Note the problem and keep going<br/>keyword search still works"]
+  Eq -- "yes" --> I["indexed"]
+  EW --> CL
+  I --> CL["classifying: predict a category<br/>from the first 20,000 characters"]
+  CL --> EN["entities: dates, money, times, emails<br/>plus people and places if spaCy is installed"]
+  EN --> Fin{"Was embedding skipped?"}
+  Fin -- "no" --> OK["completed"]
+  Fin -- "yes" --> F2["failed: semantic indexing incomplete<br/>job retried up to 3 times<br/>or press Reprocess"]
+
+  classDef decision fill:#fff4d6,stroke:#c88a00,color:#222
+  classDef bad fill:#fde2e1,stroke:#c0392b,color:#222
+  classDef good fill:#dff5e3,stroke:#1e8e3e,color:#222
+  class V,D,Xq,Eq,Fin decision
+  class E1,F1,F2 bad
+  class OK,I good

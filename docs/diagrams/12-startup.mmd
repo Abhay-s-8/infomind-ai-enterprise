@@ -1,0 +1,24 @@
+flowchart TD
+  S0["Container starts: sh start.sh"] --> S1{"Running as root?"}
+  S1 -- "yes" --> S2["Create and hand over the data folder<br/>then re-run this script as the unprivileged appuser"]
+  S1 -- "no" --> S3
+  S2 --> S3["alembic upgrade head<br/>creates or updates the tables"]
+  S3 --> S4{"INITIAL_ADMIN_EMAIL and<br/>INITIAL_ADMIN_PASSWORD set?"}
+  S4 -- "yes" --> S5["Create the administrator if missing<br/>or reset its password when RESET_ADMIN_PASSWORD is true"]
+  S4 -- "no" --> S6
+  S5 --> S6{"AUTO_TRAIN?"}
+  S6 -- "yes" --> S7["Train the classifier<br/>if no active model file exists"]
+  S6 -- "no" --> S8
+  S7 --> S8{"AUTO_REINDEX?"}
+  S8 -- "yes" --> S9["Rebuild vectors from the chunk text in SQL<br/>only if the index is incomplete"]
+  S8 -- "no" --> S10
+  S9 --> S10{"SEED_DEMO?"}
+  S10 -- "yes" --> S11["Add the synthetic demo documents"]
+  S10 -- "no" --> S12
+  S11 --> S12["Start uvicorn on port $PORT<br/>the in-process worker starts too<br/>when RUN_WORKER_IN_API is true"]
+
+  classDef decision fill:#fff4d6,stroke:#c88a00,color:#222
+  classDef bad fill:#fde2e1,stroke:#c0392b,color:#222
+  classDef good fill:#dff5e3,stroke:#1e8e3e,color:#222
+  class S1,S4,S6,S8,S10 decision
+  class S12 good

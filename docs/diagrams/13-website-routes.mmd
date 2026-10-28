@@ -1,0 +1,19 @@
+flowchart TD
+  V["Someone opens the website"] --> ROOT["Address: /"]
+  ROOT --> Q{"Signed in?<br/>a saved token is checked first"}
+  Q -- "no" --> LAND["Public landing page<br/>features, how it works, about"]
+  LAND --> LG["/login<br/>sign-in form"]
+  LAND --> RG["/register<br/>shown only if the server allows sign-up<br/>asked through GET /auth/config"]
+  RG -- "account created" --> LG
+  LG -- "success" --> ROOT
+  Q -- "yes: analyst or admin" --> OV["/overview"]
+  Q -- "yes: reviewer" --> RV["/reviews"]
+  OV --> APP["Signed-in pages inside the layout<br/>documents, document detail, assistant, search,<br/>classification, analytics, reviews, audit logs, settings"]
+  RV --> APP
+  X["Any signed-in page address<br/>without being signed in"] --> LG
+
+  classDef decision fill:#fff4d6,stroke:#c88a00,color:#222
+  classDef bad fill:#fde2e1,stroke:#c0392b,color:#222
+  classDef good fill:#dff5e3,stroke:#1e8e3e,color:#222
+  class Q decision
+  class LAND,APP good

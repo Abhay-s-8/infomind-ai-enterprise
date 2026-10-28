@@ -102,4 +102,6 @@ No OCR yet (scanned PDFs fail with a clear message); single-node in-memory rate 
 ## 10. Future enhancements
 OCR via Tesseract, server-pushed status events for document processing (instead of polling), BM25 / reranking, Redis-backed rate limits, httpOnly-cookie sessions, entity relationship graph, scheduled retraining workflow with approval, per-document sharing.
 
+Full explanation with flowcharts of every data flow: [docs/PROJECT_EXPLAINED.md](docs/PROJECT_EXPLAINED.md).
+
 Troubleshooting: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).

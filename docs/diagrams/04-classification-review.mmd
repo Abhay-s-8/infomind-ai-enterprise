@@ -1,0 +1,33 @@
+flowchart TD
+  subgraph TRAIN["Training: an administrator action, never automatic from edits"]
+    T1["Dataset: the synthetic generator<br/>or a CSV with text and label columns"] --> T2["Validate: 2+ classes, 6+ examples per class<br/>remove duplicate texts"]
+    T2 --> T3["Split 60 / 20 / 20 into train, validation, test<br/>70 / 30 if a class has fewer than 10 examples"]
+    T3 --> T4["Fit two models on TF-IDF features:<br/>Logistic Regression and Linear SVM"]
+    T4 --> T5["Pick the one with the best macro-F1<br/>on the validation split"]
+    T5 --> T6["Report accuracy and F1<br/>on the untouched test split"]
+    T6 --> T7["Save the model file in the model folder<br/>Save a model_versions row and make it active"]
+  end
+  subgraph PRED["Prediction: runs for every processed document"]
+    P1["Document text<br/>first 20,000 characters"] --> P2["The active model scores the 7 categories"]
+    P2 --> P3{"Confident enough?<br/>Logistic Regression: top probability at least 0.55<br/>SVM: gap to the runner-up at least 0.3"}
+    P3 -- "yes" --> P4["review_status = accepted"]
+    P3 -- "no" --> P5["review_status = needs_review"]
+  end
+  subgraph REV["Human review: reviewer or admin"]
+    R1["Review queue lists needs_review items"] --> R2{"Decision"}
+    R2 -- "confirm" --> R3["verified_classifications row<br/>with the predicted category"]
+    R2 -- "correct" --> R4["verified_classifications row<br/>with the chosen category"]
+    R3 --> R5["review_records keeps who, what, when, note"]
+    R4 --> R5
+  end
+  T7 -.-> P2
+  P5 --> R1
+  R5 --> SHOW["Shown everywhere: the human label<br/>wins over the machine label"]
+  P4 --> SHOW
+
+  classDef decision fill:#fff4d6,stroke:#c88a00,color:#222
+  classDef bad fill:#fde2e1,stroke:#c0392b,color:#222
+  classDef good fill:#dff5e3,stroke:#1e8e3e,color:#222
+  class P3,R2 decision
+  class P5 bad
+  class P4,SHOW good

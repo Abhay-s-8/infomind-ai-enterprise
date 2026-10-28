@@ -1,0 +1,34 @@
+flowchart LR
+  subgraph People["People"]
+    A["Administrator"]
+    N["Analyst"]
+    R["Reviewer"]
+  end
+  subgraph Browser["Web browser"]
+    UI["React web app<br/>public site, sign in, overview,<br/>documents, search, assistant"]
+  end
+  subgraph Server["FastAPI server: api/v1 routers + services"]
+    API["REST API<br/>JWT sign-in and roles"]
+    SVC["Services<br/>documents, search, classification,<br/>entities, assistant, analytics, audit"]
+    WK["Background worker<br/>reads the job table"]
+  end
+  subgraph Stores["Data stores"]
+    DB[("SQL database<br/>PostgreSQL or SQLite<br/>users, documents, chunk text,<br/>jobs, predictions, chats, audit")]
+    VS[("Qdrant<br/>one vector per chunk")]
+    FS[("File storage<br/>original uploads")]
+    MD[("Model folder<br/>trained classifier files")]
+  end
+  OL["Ollama on your computer<br/>language model + embedding model"]
+
+  A & N & R --> UI
+  UI -- "HTTPS: JSON, file upload, SSE stream" --> API
+  API --> SVC
+  SVC -- "read and write rows" --> DB
+  SVC -- "search vectors" --> VS
+  SVC -- "save or read a file" --> FS
+  SVC -- "load the classifier" --> MD
+  SVC -- "prompts and text to embed" --> OL
+  WK -- "claim a job, save chunks and results" --> DB
+  WK -- "store vectors" --> VS
+  WK -- "read the file" --> FS
+  WK -- "embed text" --> OL

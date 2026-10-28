@@ -1,0 +1,24 @@
+flowchart TD
+  Q["Question from the Assistant page"] --> A1["Hybrid retrieval over the documents<br/>this user may see<br/>falls back to keyword if vectors are down"]
+  A1 --> G{"Evidence gate: a chunk must share at least 34 percent<br/>of the question words OR have semantic score 0.55 or more"}
+  G -- "nothing passes" --> INS["Safe refusal: not enough evidence<br/>(when nothing passes the gate<br/>the model is not called at all)"]
+  G -- "some pass" --> SAN["Sanitise each chunk, drop any that look like<br/>prompt injection, keep at most 5"]
+  SAN --> S2{"Anything left?"}
+  S2 -- "no" --> INS
+  S2 -- "yes" --> P["Build the prompt<br/>evidence blocks labelled E1 to E5<br/>real ids never reach the model"]
+  P --> LLM["Ollama in JSON mode, temperature 0<br/>keys in order: supported, citations, answer, inference"]
+  LLM --> PA{"Valid JSON?"}
+  PA -- "no" --> ERR["Error: unreadable model response, retry"]
+  PA -- "yes" --> CHK{"supported is true<br/>AND the answer is not empty<br/>AND at least one citation maps<br/>to a chunk that was retrieved?"}
+  CHK -- "no" --> INS
+  CHK -- "yes" --> ANS["Answer + citations<br/>citation text comes from the stored chunk,<br/>never from the model"]
+  INS --> SAVE
+  ANS --> SAVE["Save the conversation and both messages<br/>write an audit row (no question text)"]
+  SAVE --> UI["Show it in the browser"]
+
+  classDef decision fill:#fff4d6,stroke:#c88a00,color:#222
+  classDef bad fill:#fde2e1,stroke:#c0392b,color:#222
+  classDef good fill:#dff5e3,stroke:#1e8e3e,color:#222
+  class G,S2,PA,CHK decision
+  class INS,ERR bad
+  class ANS good

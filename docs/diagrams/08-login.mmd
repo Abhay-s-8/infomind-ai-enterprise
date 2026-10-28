@@ -1,0 +1,16 @@
+flowchart LR
+  L1["Email + password<br/>POST /auth/login"] --> L2["Look up the user<br/>by lower-case email"]
+  L2 --> L3{"bcrypt compare<br/>an unknown email is compared against a dummy hash<br/>so the timing looks the same"}
+  L3 -- "wrong password,<br/>unknown email or disabled" --> L4["401 Invalid email or password<br/>audit row: auth.login failure"]
+  L3 -- "correct" --> L5["Create a JWT<br/>user id, role, 60 minute expiry, unique id"]
+  L5 --> L6["Browser keeps the token<br/>and sends it as Authorization: Bearer"]
+  L6 --> L7["GET /auth/me, then show the app<br/>analysts and admins land on /overview<br/>reviewers on /reviews"]
+  L8["Visitors without an account<br/>POST /auth/register<br/>only when ENABLE_REGISTRATION is true"] --> L9["New user is created as an analyst<br/>password at least 10 characters"]
+  L9 --> L1
+
+  classDef decision fill:#fff4d6,stroke:#c88a00,color:#222
+  classDef bad fill:#fde2e1,stroke:#c0392b,color:#222
+  classDef good fill:#dff5e3,stroke:#1e8e3e,color:#222
+  class L3 decision
+  class L4 bad
+  class L7,L9 good

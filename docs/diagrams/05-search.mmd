@@ -1,0 +1,23 @@
+flowchart TD
+  Q["Search text + filters<br/>category, file type, dates, page"] --> TERMS["Split into words<br/>drop common words such as the, of, what"]
+  TERMS --> M{"Mode"}
+  M -- "keyword" --> K1["SQL ILIKE on chunk text<br/>own documents only, admin sees all"]
+  K1 --> K2["Score = 80 percent share of query words found<br/>+ 20 percent how often they appear"]
+  M -- "semantic" --> S1["Embed the query into a vector"]
+  S1 --> S2["Qdrant cosine search<br/>owner filter inside the query"]
+  S2 --> S3["Re-check ownership in the SQL database"]
+  M -- "hybrid" --> H1["Run keyword and semantic"]
+  H1 --> H2["Merge by reciprocal-rank fusion<br/>score shown = 0.6 semantic + 0.4 keyword"]
+  K2 --> F
+  S3 --> F
+  H2 --> F["Attach each document's category<br/>human label first"]
+  F --> FL["Apply the category, file type and date filters"]
+  FL --> PG["Paginate (at most 200 candidates)<br/>build an excerpt with highlighted words"]
+  PG --> LOG["Write a search_logs row<br/>query, mode, count, latency"]
+  LOG --> OUT["Results go to the browser"]
+
+  classDef decision fill:#fff4d6,stroke:#c88a00,color:#222
+  classDef bad fill:#fde2e1,stroke:#c0392b,color:#222
+  classDef good fill:#dff5e3,stroke:#1e8e3e,color:#222
+  class M decision
+  class OUT good

@@ -1,0 +1,85 @@
+erDiagram
+  users ||--o{ documents : owns
+  users ||--o{ conversations : owns
+  users ||--o{ search_logs : makes
+  users ||--o{ review_records : "reviews as"
+  users ||--o{ verified_classifications : "labels as"
+  documents ||--o{ document_chunks : "split into"
+  documents ||--o{ processing_jobs : "queued as"
+  documents ||--o{ processing_events : "history"
+  documents ||--o{ classification_predictions : "machine labels"
+  documents ||--o| verified_classifications : "human label"
+  documents ||--o{ review_records : "reviewed in"
+  documents ||--o{ extracted_entities : contains
+  conversations ||--o{ chat_messages : contains
+
+  users {
+    string id PK
+    string email UK
+    string password_hash
+    string role "admin, analyst or reviewer"
+    bool is_active
+  }
+  documents {
+    string id PK
+    string owner_id FK
+    string filename
+    string storage_id UK
+    string sha256 "unique with owner_id"
+    string status
+    text extracted_text
+    int chunk_count
+    string deletion_state
+  }
+  document_chunks {
+    string id PK "also the Qdrant point id"
+    string document_id FK
+    int chunk_index
+    int page
+    text text
+  }
+  processing_jobs {
+    string id PK
+    string document_id FK
+    string status "pending, running, done, failed"
+    int attempts
+  }
+  classification_predictions {
+    string id PK
+    string document_id FK
+    string model_version
+    string category
+    float score
+    string review_status
+    bool is_current
+  }
+  verified_classifications {
+    string document_id PK
+    string category
+    string reviewer_id FK
+  }
+  chat_messages {
+    string id PK
+    string conversation_id FK
+    string role "user or assistant"
+    json citations
+    bool sufficient_evidence
+  }
+  model_versions {
+    string version UK
+    string algorithm
+    json metrics
+    bool is_active
+  }
+  audit_events {
+    string id PK
+    string actor_id "no foreign key"
+    string action
+    string outcome
+    string request_id
+  }
+  evaluation_runs {
+    string id PK
+    string kind "classification, retrieval or rag"
+    json results
+  }

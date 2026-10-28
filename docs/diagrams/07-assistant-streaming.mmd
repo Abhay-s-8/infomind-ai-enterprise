@@ -1,0 +1,28 @@
+sequenceDiagram
+  autonumber
+  participant B as Browser (Assistant page)
+  participant A as API: POST /chat/stream
+  participant R as Assistant service
+  participant O as Ollama
+  participant D as SQL database
+  B->>A: question + JWT
+  A->>A: check role, rate limit (12 per minute), conversation owner
+  A->>R: answer_question_stream
+  R->>D: hybrid search over this user's documents
+  R->>R: evidence gate, sanitise, drop injection-like text, label E1 to E5
+  A-->>B: event meta (retrieval mode, excluded count)
+  alt nothing passes the gate
+    R-->>A: final = not enough evidence (model never called)
+  else evidence found
+    R->>O: system prompt + question + evidence (JSON mode, streaming)
+    loop pieces of JSON arrive
+      O-->>R: a small piece of text
+      R->>R: hold the answer text back until supported is true and a valid citation was seen
+      R-->>A: citations, then delta text
+      A-->>B: event citations, then event delta
+    end
+    R->>R: final check: strict JSON, supported, citations map to retrieved chunks
+  end
+  A->>D: save the user and assistant messages, write the audit row
+  A-->>B: event done (the saved message replaces the streamed text)
+  Note over B,A: If the browser presses Stop or disconnects before done, nothing is saved

@@ -1,0 +1,21 @@
+flowchart TD
+  RQ["Every API request"] --> RL{"Rate limit per client address<br/>login 10, register 10, upload 20,<br/>chat 12, search 30 per minute"}
+  RL -- "over the limit" --> E429["429 Too many requests"]
+  RL -- "ok" --> TK{"Bearer token present and valid?<br/>HS256 signature, not expired"}
+  TK -- "no" --> E401["401 Not authenticated"]
+  TK -- "yes" --> US{"User exists and is active?"}
+  US -- "no" --> E401
+  US -- "yes" --> RO{"Is the role allowed for this route?<br/>admin passes every role check"}
+  RO -- "no" --> E403["403 Insufficient permissions<br/>audit row: authz.denied"]
+  RO -- "yes" --> OW{"Does the route target one document?"}
+  OW -- "yes, and the user is not the owner or an admin" --> E404["404 Not found<br/>existence is not revealed"]
+  OW -- "no, or allowed" --> H["Run the handler"]
+  H --> AU["Write an audit row for sensitive actions<br/>who, what, outcome, request id"]
+  H --> RESP["Response carries X-Request-ID, nosniff and no-store headers"]
+
+  classDef decision fill:#fff4d6,stroke:#c88a00,color:#222
+  classDef bad fill:#fde2e1,stroke:#c0392b,color:#222
+  classDef good fill:#dff5e3,stroke:#1e8e3e,color:#222
+  class RL,TK,US,RO,OW decision
+  class E429,E401,E403,E404 bad
+  class H,RESP good

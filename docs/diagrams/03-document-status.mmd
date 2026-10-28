@@ -1,0 +1,17 @@
+stateDiagram-v2
+  [*] --> uploaded: file accepted
+  uploaded --> queued: job created
+  queued --> extracting: worker claims the job
+  queued --> failed: original file is missing
+  extracting --> chunking: text found
+  extracting --> failed: no text or unreadable file
+  chunking --> embedding: chunks saved
+  embedding --> indexed: vectors stored
+  embedding --> classifying: embedding unavailable, text still processed
+  indexed --> classifying
+  classifying --> completed: every stage done
+  classifying --> failed: embedding had been unavailable
+  failed --> extracting: automatic retry, up to 3 attempts
+  failed --> queued: Reprocess button
+  completed --> queued: Reprocess button
+  completed --> [*]
