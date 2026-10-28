@@ -49,6 +49,52 @@ Design choices (both files):
 
 **Cost** (approximate, from a web search of Render's pricing; check render.com/pricing): the free file costs nothing (no card). The paid file's `0.5c-512mb` web service is about $7 per month plus about $0.25 per month for the 1 GB disk. Measured locally: migrate + train + seed peaked at about 220 MB and the running API used about 180-235 MB, so 512 MB fits, but a large upload could need a bigger plan.
 
+## Optional: bring the AI assistant online with Ollama's hosted cloud (no computer of yours needs to stay on)
+Ollama also serves open-weight models from its own servers through the same API, so the hosted API can use them directly:
+`hosted API -> https://ollama.com`. The hosted API sends your key as `Authorization: Bearer <key>` (`OLLAMA_API_KEY`).
+
+1. Create an Ollama account and an API key at https://ollama.com/settings/keys. Check https://ollama.com/settings/usage for what your plan includes: at the time of writing Ollama's pricing page describes the free plan as "a small amount of monthly usage for a set of starter models" (the amount is not published there) and says other models need pay-as-you-go usage credits, priced per token (rates are on each model's page; whether a card is needed is not stated on the pages read). **Check the cost before relying on it.**
+2. Pick a model and test it from your own terminal (the key stays in your terminal, never in a file or the repository):
+   ```powershell
+   cd backend
+   $env:OLLAMA_BASE_URL = "https://ollama.com"; $env:OLLAMA_API_KEY = "<your key>"
+   .\.venv\Scripts\python -m app.cli check-llm --list      # lists the model names this account can use
+   $env:OLLAMA_LLM_MODEL = "<a name from the list>"
+   .\.venv\Scripts\python -m app.cli check-llm             # one small JSON request; says whether the assistant can use it
+   ```
+   `check-llm` reports the first-text delay and whether the reply is valid JSON (the assistant requires it). It never prints the key. A model that produces only hidden reasoning (no answer text) fails the check.
+3. Optional but recommended: measure answer quality with that model, as for the local models: `python -m app.cli evaluate` with the same three settings in the terminal. No cloud model has been evaluated with this application yet.
+4. In the Render dashboard (service, Environment) set `OLLAMA_BASE_URL=https://ollama.com`, `OLLAMA_API_KEY` and `OLLAMA_LLM_MODEL`; leave `EMBEDDING_PROVIDER=hash` (only the language model is remote). Redeploy, because settings are read at start-up.
+
+What to expect, honestly:
+- Observed on 2026-10-29 with one account: `beam` worked (valid JSON, see EVALUATION.md); `gpt-oss:20b` and `gemma4:31b` returned HTTP 402 (credits required). Plans and models change, so run `check-llm` yourself.
+- Always on; no tunnel or home computer involved. The free API still sleeps when idle and takes about a minute to wake.
+- **Your documents' passages leave your machine** for every question. Ollama's pricing page states that prompt and response data is never logged or trained on and that hosting partners must not log or retain it; this is the provider's statement, not something verified here.
+- Usage is metered by Ollama; a busy public demo could use up a free allowance. Watch https://ollama.com/settings/usage.
+- Model names and availability change; rerun `check-llm --list` if the assistant reports Ollama is unreachable.
+- The key sits in the hosted API's environment settings; anyone who learns it can spend your allowance. Revoke it at https://ollama.com/settings/keys if it leaks.
+
+## Optional: bring the AI assistant online through a tunnel to your own computer
+The hosted API cannot run Ollama, but it can use the Ollama on **your computer** while that computer is on. The path is
+`hosted API -> https tunnel -> gateway on your PC -> Ollama`. Ollama has no login of its own, so it is never exposed directly:
+the gateway (`backend/app/gateway.py`) listens on the loopback address only, requires `Authorization: Bearer <key>` on every request,
+forwards **only** chat, embed and list-models calls (pull, delete, create and everything else are refused even with the key),
+and caps request size and rate. The hosted API sends the key from `OLLAMA_API_KEY`.
+
+1. Install the tunnel program once: `winget install Cloudflare.cloudflared` (a free "quick tunnel" needs no Cloudflare account).
+2. On your PC run `.\scripts\ollama-tunnel.ps1`. On first use it creates the key in `%USERPROFILE%\.infomind\ollama-gateway.key` (outside the repository), starts the gateway, starts the tunnel and prints the tunnel address. Keep that window open. `.\scripts\ollama-tunnel.ps1 -ShowKey` prints the key once, to paste into the hosted API's settings; `-SelfTest` checks the gateway without a tunnel.
+3. In the Render dashboard (service, Environment) set `OLLAMA_BASE_URL` to the printed `https://....trycloudflare.com` address, `OLLAMA_API_KEY` to the key, and `OLLAMA_LLM_MODEL=llama3.1:8b`; leave `EMBEDDING_PROVIDER=hash` (only the language model is remote). Redeploy, because the settings are read at start-up.
+4. Settings in the web app should now show the language model as available. Ask a question on the AI Assistant page.
+
+What to expect, honestly:
+- The assistant works **only while your PC, Ollama and the tunnel are running**. Otherwise the page says Ollama is not reachable, as before.
+- A quick tunnel gets a **new address every time it restarts**, so the setting must be changed and the API redeployed each time. A stable address needs a named Cloudflare tunnel on a domain you control.
+- A redeploy of the free API wipes its temporary disk (see above), so the classifier is retrained at start-up.
+- The first answer after Ollama has been idle takes about 10 to 12 seconds while the model loads (measured locally with `llama3.1:8b`); this is not measured through the tunnel.
+- Setting `OLLAMA_API_KEY` together with a plain `http://` address to a remote host is refused in production, so the key is never sent unencrypted.
+- Your documents' passages travel through the tunnel to your PC for each question; Cloudflare's network carries that traffic.
+- Anyone who learns the key can use your GPU through the tunnel. Treat it like a password; delete `%USERPROFILE%\.infomind\ollama-gateway.key` and rerun the script to rotate it.
+
 ## 2. Web interface on Vercel
 The project `infomind-ai-enterprise` is already linked to the GitHub repo (root directory `frontend`) and redeploys on every push to `main`.
 1. In Vercel: **Project, Settings, Environment Variables**, add `VITE_API_BASE` = `https://<your-service>.onrender.com/api/v1` for *Production*. (Or `vercel env add VITE_API_BASE production` from the repo root.)

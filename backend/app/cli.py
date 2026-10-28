@@ -7,6 +7,7 @@
   train          train + activate the classifier (synthetic data, or --csv path; --if-missing to skip if trained)
   export-data    write sample training CSV and demo documents under data/
   evaluate       run the evaluation suite and export JSON/CSV   (--skip-rag to skip the LLM part)
+  check-llm      check the configured Ollama (local, gateway or hosted cloud) and the language model   (--list)
 """
 import argparse
 import os
@@ -138,6 +139,49 @@ def cmd_evaluate(a):
         print(f"  retrieval[{mode}]", {k: round(v, 3) for k, v in m.items()})
 
 
+def cmd_check_llm(a):
+    """Reports what the configured language model setup can do. Never prints the API key."""
+    import time
+    from urllib.parse import urlparse
+
+    from app.core.errors import ServiceUnavailable
+    from app.services import embedding_service, rag_service
+
+    s = get_settings()
+    print(f"Ollama address : {urlparse(s.ollama_base_url).netloc or s.ollama_base_url}")
+    print(f"API key        : {'set' if s.ollama_api_key else 'not set'}")
+    print(f"Language model : {s.ollama_llm_model}")
+    status = embedding_service.get_ollama_client().status()
+    if not status["reachable"]:
+        sys.exit("Cannot list models: the address is unreachable, or the API key was rejected.")
+    names = status["models"]
+    print(f"Models listed  : {len(names)}")
+    if a.list:
+        for name in sorted(names):
+            print(f"  {name}")
+    wanted = s.ollama_llm_model
+    if not any(n == wanted or (":" not in wanted and n.split(":")[0] == wanted) for n in names):
+        sys.exit(f"The model '{wanted}' is not in the list. Set OLLAMA_LLM_MODEL to one of the listed names (use --list).")
+    prompt = 'Reply with a single JSON object: {"supported": true, "answer": "<three words that greet someone>"}'
+    start, first, parts = time.monotonic(), None, []
+    try:
+        for piece in embedding_service.get_llm().chat_json_stream(prompt, "Greet me."):
+            first = first if first is not None else time.monotonic() - start
+            parts.append(piece)
+    except ServiceUnavailable as exc:
+        sys.exit(f"The model call failed: {exc.message}")
+    raw = "".join(parts)
+    if not raw.strip():
+        sys.exit("The model returned no text (a model that only produces hidden reasoning cannot be used for answers).")
+    print(f"First text after {first:.1f}s, finished after {time.monotonic() - start:.1f}s")
+    try:
+        data = rag_service.parse_llm_output(raw)
+    except Exception:  # noqa: BLE001 - any parse failure is the same finding
+        sys.exit("The model's reply was not valid JSON, which the assistant requires.")
+    print(f"Valid JSON     : yes (keys: {', '.join(sorted(data))})")
+    print("OK: this setup can run the assistant.")
+
+
 def main():
     p = argparse.ArgumentParser(prog="app.cli")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -159,6 +203,9 @@ def main():
     s.add_argument("--email", default=get_settings().dev_admin_email or "admin@example.com")
     s.set_defaults(fn=cmd_seed_demo)
     sub.add_parser("export-data").set_defaults(fn=cmd_export_data)
+    s = sub.add_parser("check-llm")
+    s.add_argument("--list", action="store_true", help="also print every model name the address offers")
+    s.set_defaults(fn=cmd_check_llm)
     s = sub.add_parser("evaluate")
     s.add_argument("--email", default=get_settings().dev_admin_email or "admin@example.com")
     s.add_argument("--skip-rag", action="store_true")

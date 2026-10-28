@@ -32,31 +32,52 @@ def tokenize(text: str) -> list[str]:
     return re.findall(r"[a-z0-9]+", text.lower())
 
 
+REJECTED = "The Ollama gateway rejected the request. Check that OLLAMA_API_KEY matches the gateway's key."
+PAYMENT = "Ollama requires usage credits for this model (HTTP 402). Choose a model your plan includes, or add credits."
+RATE_LIMITED = "Ollama is limiting requests (HTTP 429). Wait a moment and retry."
+
+
 class OllamaClient:
-    def __init__(self, base_url: str, timeout: float):
+    def __init__(self, base_url: str, timeout: float, api_key: str = ""):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
+        self.api_key = api_key
+
+    def _headers(self) -> dict[str, str]:
+        return {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
+
+    @staticmethod
+    def _http_error(exc: httpx.HTTPStatusError) -> ServiceUnavailable:
+        code = exc.response.status_code
+        if code in (401, 403):  # never echo the key or the response body
+            return ServiceUnavailable(REJECTED)
+        if code == 402:
+            return ServiceUnavailable(PAYMENT)
+        if code == 429:
+            return ServiceUnavailable(RATE_LIMITED)
+        return ServiceUnavailable(f"Ollama returned HTTP {code}. Is the model pulled?")
 
     def _post(self, path: str, payload: dict) -> dict:
         try:
-            r = httpx.post(f"{self.base_url}{path}", json=payload, timeout=self.timeout)
+            r = httpx.post(f"{self.base_url}{path}", json=payload, headers=self._headers(), timeout=self.timeout)
             r.raise_for_status()
             return r.json()
         except httpx.HTTPStatusError as exc:
-            raise ServiceUnavailable(f"Ollama returned HTTP {exc.response.status_code}. Is the model pulled?") from exc
+            raise self._http_error(exc) from exc
         except httpx.HTTPError as exc:
             raise ServiceUnavailable("Ollama is not reachable. Start Ollama and pull the configured models.") from exc
 
     def _stream(self, path: str, payload: dict) -> Iterator[dict]:
         """POST and yield one parsed JSON object per NDJSON line. The timeout applies per read, not to the whole answer."""
         try:
-            with httpx.stream("POST", f"{self.base_url}{path}", json=payload, timeout=self.timeout) as r:
+            with httpx.stream("POST", f"{self.base_url}{path}", json=payload, headers=self._headers(),
+                              timeout=self.timeout) as r:
                 r.raise_for_status()
                 for line in r.iter_lines():
                     if line.strip():
                         yield json.loads(line)
         except httpx.HTTPStatusError as exc:
-            raise ServiceUnavailable(f"Ollama returned HTTP {exc.response.status_code}. Is the model pulled?") from exc
+            raise self._http_error(exc) from exc
         except httpx.HTTPError as exc:
             raise ServiceUnavailable("Ollama is not reachable. Start Ollama and pull the configured models.") from exc
         except json.JSONDecodeError as exc:
@@ -64,7 +85,7 @@ class OllamaClient:
 
     def status(self) -> dict:
         try:
-            r = httpx.get(f"{self.base_url}/api/tags", timeout=3.0)
+            r = httpx.get(f"{self.base_url}/api/tags", headers=self._headers(), timeout=3.0)
             r.raise_for_status()
             return {"reachable": True, "models": [m["name"] for m in r.json().get("models", [])]}
         except (httpx.HTTPError, ValueError):
@@ -135,7 +156,7 @@ class OllamaLLM:
 @lru_cache
 def get_ollama_client() -> OllamaClient:
     s = get_settings()
-    return OllamaClient(s.ollama_base_url, s.ollama_timeout_seconds)
+    return OllamaClient(s.ollama_base_url, s.ollama_timeout_seconds, s.ollama_api_key)
 
 
 @lru_cache

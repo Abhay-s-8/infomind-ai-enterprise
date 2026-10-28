@@ -40,6 +40,17 @@ Caveats: this is 5 answerable questions on a 14-document synthetic corpus, so it
 
 Remaining ideas if the 8B model still misbehaves on real documents: a reranker or cross-encoder, and a larger labelled question set before tuning any threshold.
 
+### Ollama's hosted cloud: `beam` (measured 2026-10-29)
+Same 7-question evaluation and 14-document synthetic corpus, but configured like the hosted site: a fresh SQLite database, the lexical hashing embedder (256-d), and the language model reached at `https://ollama.com` with an API key (`OLLAMA_BASE_URL`, `OLLAMA_API_KEY`, `OLLAMA_LLM_MODEL=beam`).
+| Check | `beam` via Ollama cloud |
+|---|---|
+| Answerable questions answered | 4 / 4 (35 days, $24,500, 9, seven years) |
+| Expected evidence cited | 4 / 4 |
+| Unanswerable questions refused | 3 / 3 (the model was not called for these) |
+| Citation validity | 100 percent |
+| Mean latency, evaluation run | 1.04 s (about 1.5 to 2.1 s per answered question, from this PC to ollama.com) |
+Caveats: 7 questions on a small synthetic corpus, one run; manual faithfulness review has **not** been done. `beam` was the model Ollama's catalogue labelled free; on this account `gpt-oss:20b` and `gemma4:31b` answered HTTP 402 (credits required), so which models work depends on the plan. The model is hosted by Ollama, so passages leave your machine. This shows the pipeline works with this model, not that its answers are reliable in general.
+
 ## Semantic vs keyword on paraphrases (live, same corpus, nomic-embed-text)
 The 14 labelled queries tie (all modes score 1.0) because they share words with their documents. Three ad-hoc paraphrase queries (not a labelled set) were more informative:
 | Query | keyword | semantic | hybrid |

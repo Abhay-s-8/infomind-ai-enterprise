@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from urllib.parse import urlparse
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -23,6 +24,7 @@ class Settings(BaseSettings):
     ollama_llm_model: str = "llama3.2:3b"
     ollama_embedding_model: str = "nomic-embed-text"
     ollama_timeout_seconds: float = 120.0
+    ollama_api_key: str = ""  # sent as "Authorization: Bearer ..." when Ollama sits behind an authenticating gateway
     ollama_num_ctx: int = 4096
     # "ollama" (real embeddings) or "hash" (deterministic CPU-only hashing embedder for dev/tests)
     embedding_provider: str = "ollama"
@@ -82,6 +84,10 @@ class Settings(BaseSettings):
                 raise RuntimeError("JWT_SECRET must be set to a random value of 32+ characters in production")
             if self.dev_admin_password:
                 raise RuntimeError("DEV_ADMIN_PASSWORD must not be set in production")
+            host = urlparse(self.ollama_base_url).hostname or ""
+            if self.ollama_api_key and self.ollama_base_url.lower().startswith("http://") and host not in (
+                    "localhost", "127.0.0.1", "host.docker.internal"):
+                raise RuntimeError("OLLAMA_API_KEY would be sent unencrypted: use an https:// OLLAMA_BASE_URL")
 
 
 @lru_cache
