@@ -9,7 +9,7 @@ set -e
 # Start as root only long enough to fix ownership of a mounted data directory (hosts such as Render mount
 # persistent disks as root), then re-run this script as the unprivileged user. DATA_DIR is optional.
 if [ "$(id -u)" = "0" ]; then
-  if [ -n "$DATA_DIR" ] && [ -d "$DATA_DIR" ]; then chown -R appuser:appuser "$DATA_DIR"; fi
+  if [ -n "$DATA_DIR" ]; then mkdir -p "$DATA_DIR" && chown -R appuser:appuser "$DATA_DIR"; fi
   exec env HOME=/home/appuser setpriv --reuid=appuser --regid=appuser --init-groups sh "$0" "$@"
 fi
 

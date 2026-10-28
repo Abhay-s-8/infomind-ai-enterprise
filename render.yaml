@@ -1,23 +1,23 @@
-# Render Blueprint: the API only (the web interface is hosted on Vercel; see docs/DEPLOYMENT.md).
+# Render Blueprint (FREE plan): the API only. The web interface is hosted on Vercel; see docs/DEPLOYMENT.md.
 #
-# Everything lives on ONE persistent disk so the database, uploaded files, vectors and trained model stay consistent
-# across restarts: SQLite + embedded Qdrant + the lexical "hash" embedder. Ollama cannot run on Render, so the AI
-# assistant and neural semantic embeddings are OFF in this deployment (keyword + lexical search, classification,
-# entities, analytics and the rest work). Plan names are Render's current ones; check pricing before applying.
+# No card is needed for this file. The trade-off: a free instance has no persistent disk and sleeps when idle, so the
+# database, uploads, vectors and trained model live under /tmp and RESET whenever the instance restarts or wakes.
+# start.sh rebuilds the essentials on every start (migration, admin, classifier, synthetic demo documents), so the
+# app is always in a consistent state, but anything uploaded or created in the UI is lost. For persistent data add a
+# payment method in Render and use render.paid.yaml instead (choose it as the Blueprint file path).
+#
+# Ollama cannot run on Render, so the AI assistant and neural semantic embeddings are OFF here (keyword + lexical
+# search, classification, entities, analytics and the rest work).
 services:
   - type: web
     name: infomind-api
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    plan: 0.5c-512mb          # peak memory measured at about 220 MB for migrate + train + seed; leave headroom
-    numInstances: 1           # a disk and the embedded vector store both require a single instance
+    plan: free
+    numInstances: 1           # the embedded vector store requires a single instance
     healthCheckPath: /api/v1/health
     autoDeployTrigger: commit
-    disk:
-      name: data
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: ENVIRONMENT
         value: production
@@ -30,15 +30,15 @@ services:
       - key: FORWARDED_ALLOW_IPS
         value: "*"              # trust Render's proxy so per-IP rate limits see the real client address
       - key: DATA_DIR
-        value: /var/data        # start.sh makes the (root-owned) disk writable for the app user
+        value: /tmp/infomind    # created at start-up and handed to the unprivileged app user
       - key: DATABASE_URL
-        value: sqlite:////var/data/infomind.db
+        value: sqlite:////tmp/infomind/infomind.db
       - key: STORAGE_DIR
-        value: /var/data/uploads
+        value: /tmp/infomind/uploads
       - key: MODEL_DIR
-        value: /var/data/models
+        value: /tmp/infomind/models
       - key: QDRANT_URL
-        value: path:/var/data/qdrant
+        value: path:/tmp/infomind/qdrant
       - key: EMBEDDING_PROVIDER
         value: hash
       - key: EMBEDDING_DIMENSIONS
@@ -48,7 +48,7 @@ services:
       - key: AUTO_TRAIN
         value: "true"
       - key: SEED_DEMO
-        value: "true"           # synthetic demo documents; set to "false" (and delete them) for real use
+        value: "true"           # synthetic demo documents, recreated on every start
       - key: INITIAL_ADMIN_EMAIL
         sync: false             # you are prompted for this when you create the Blueprint
       - key: INITIAL_ADMIN_PASSWORD

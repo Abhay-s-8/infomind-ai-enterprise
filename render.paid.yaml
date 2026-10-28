@@ -1,0 +1,57 @@
+# Render Blueprint (PAID plan, persistent data): the API only (the web interface is hosted on Vercel).
+# Render only accepts this once a payment method is on the account (otherwise: "need_payment_info"). Use it by
+# choosing `render.paid.yaml` as the Blueprint file path. The default render.yaml is the free variant.
+#
+# Everything lives on ONE persistent disk so the database, uploaded files, vectors and trained model stay consistent
+# across restarts: SQLite + embedded Qdrant + the lexical "hash" embedder. Ollama cannot run on Render, so the AI
+# assistant and neural semantic embeddings are OFF in this deployment (keyword + lexical search, classification,
+# entities, analytics and the rest work). Plan names are Render's current ones; check pricing before applying.
+services:
+  - type: web
+    name: infomind-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: 0.5c-512mb          # peak memory measured at about 220 MB for migrate + train + seed; leave headroom
+    numInstances: 1           # a disk and the embedded vector store both require a single instance
+    healthCheckPath: /api/v1/health
+    autoDeployTrigger: commit
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENABLE_REGISTRATION
+        value: "false"          # nobody can self-register on a public URL; the admin creates users
+      - key: CORS_ORIGINS
+        value: https://infomind-ai-enterprise.vercel.app
+      - key: FORWARDED_ALLOW_IPS
+        value: "*"              # trust Render's proxy so per-IP rate limits see the real client address
+      - key: DATA_DIR
+        value: /var/data        # start.sh makes the (root-owned) disk writable for the app user
+      - key: DATABASE_URL
+        value: sqlite:////var/data/infomind.db
+      - key: STORAGE_DIR
+        value: /var/data/uploads
+      - key: MODEL_DIR
+        value: /var/data/models
+      - key: QDRANT_URL
+        value: path:/var/data/qdrant
+      - key: EMBEDDING_PROVIDER
+        value: hash
+      - key: EMBEDDING_DIMENSIONS
+        value: "256"
+      - key: RUN_WORKER_IN_API
+        value: "true"
+      - key: AUTO_TRAIN
+        value: "true"
+      - key: SEED_DEMO
+        value: "true"           # synthetic demo documents; set to "false" (and delete them) for real use
+      - key: INITIAL_ADMIN_EMAIL
+        sync: false             # you are prompted for this when you create the Blueprint
+      - key: INITIAL_ADMIN_PASSWORD
+        sync: false             # at least 10 characters; choose a NEW password, not one used elsewhere

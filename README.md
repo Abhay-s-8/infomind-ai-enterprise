@@ -67,7 +67,7 @@ Ollama stays on the Windows host (GPU passthrough to Docker on Windows is not as
 - If the PostgreSQL password contains `@`, `:`, `/` or `%`, also set `DATABASE_URL` in `.env` with the password percent-encoded (`@` → `%40`).
 
 ### Hosting (Render API + Vercel web interface)
-`render.yaml` and [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) describe a hosted setup. Ollama cannot run on Render, so the hosted version has no AI assistant and uses the lexical hash embedder; everything else works. Verified locally with the production image; not yet verified on Render itself.
+`render.yaml` (free, no card; data resets when the instance restarts) and `render.paid.yaml` (persistent disk, needs a payment method) with [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) describe a hosted setup. Ollama cannot run on Render, so the hosted version has no AI assistant and uses the lexical hash embedder; everything else works. Both blueprints pass Render's validator (the paid one only asks for a card) and the production image was run locally; the service has not yet been created on Render.
 
 ## 6. Demonstration procedure
 1. Log in as the admin. **Classification → Train on synthetic data** (or `python -m app.cli train`).
