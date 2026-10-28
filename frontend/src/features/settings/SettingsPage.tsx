@@ -18,20 +18,20 @@ export default function SettingsPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card title="Account">
           <dl className="space-y-2 text-sm">
-            <div className="flex justify-between"><dt className="text-muted">Email</dt><dd>{user?.email}</dd></div>
+            <div className="flex justify-between"><dt className="text-muted">Email</dt><dd className="measured">{user?.email}</dd></div>
             <div className="flex justify-between"><dt className="text-muted">Role</dt><dd><Badge tone="accent">{user?.role}</Badge></dd></div>
           </dl>
-          <p className="mt-3 text-xs text-muted">Roles are enforced by the server. Hiding a menu item is only a convenience.</p>
+          <p className="mt-4 text-sm text-muted">Roles are enforced by the server. Hiding a menu item is only a convenience.</p>
         </Card>
         <Card title="AI model availability">
           {models.isLoading ? <Spinner /> : models.error ? <ErrorState error={models.error} /> : m && (
             <ul className="space-y-2 text-sm">
               <li className="flex justify-between"><span>Ollama</span><Badge tone={m.ollama_reachable ? "ok" : "danger"}>{m.ollama_reachable ? "reachable" : "unreachable"}</Badge></li>
-              <li className="flex justify-between"><span>LLM <code className="text-xs text-muted">{m.llm.model}</code></span><Badge tone={m.llm.available ? "ok" : "danger"}>{m.llm.available ? "available" : "not available"}</Badge></li>
-              <li className="flex justify-between"><span>Embeddings <code className="text-xs text-muted">{m.embedding.provider}: {m.embedding.model} ({m.embedding.dimensions}d)</code></span><Badge tone={m.embedding.available ? "ok" : "danger"}>{m.embedding.available ? "available" : "not available"}</Badge></li>
+              <li className="flex justify-between"><span>LLM <code className="measured ml-1 text-muted">{m.llm.model}</code></span><Badge tone={m.llm.available ? "ok" : "danger"}>{m.llm.available ? "available" : "not available"}</Badge></li>
+              <li className="flex justify-between"><span>Embeddings <code className="measured ml-1 text-muted">{m.embedding.provider}: {m.embedding.model} ({m.embedding.dimensions}d)</code></span><Badge tone={m.embedding.available ? "ok" : "danger"}>{m.embedding.available ? "available" : "not available"}</Badge></li>
               <li className="flex justify-between"><span>Classifier</span><Badge tone={m.classifier.available ? "ok" : "warn"}>{m.classifier.available ? "trained" : "not trained"}</Badge></li>
               <li className="flex justify-between"><span>Entity extraction</span><span className="text-muted">rules{m.entity_extraction.spacy ? " + spaCy" : " (spaCy not installed)"}</span></li>
-              {m.embedding.note && <li className="text-xs text-warn">{m.embedding.note}</li>}
+              {m.embedding.note && <li className="text-sm text-accent">{m.embedding.note}</li>}
             </ul>
           )}
         </Card>

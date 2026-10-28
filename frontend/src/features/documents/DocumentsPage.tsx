@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { UploadCloud } from "lucide-react";
+import { Check, UploadCloud } from "lucide-react";
 import { useRef, useState, type DragEvent } from "react";
 import { Link } from "react-router-dom";
 import { Badge, Button, Card, EmptyState, ErrorState, Input, PageHeader, Select, Spinner, Table } from "../../components/ui";
@@ -55,7 +55,7 @@ export default function DocumentsPage() {
       <PageHeader title="Documents" description={`Upload ${ALLOWED_EXTENSIONS.join(", ").toUpperCase()} files (max ${MAX_UPLOAD_MB} MB each). Files are validated, de-duplicated, indexed and classified.`} />
 
       <div onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={onDrop}
-        className={`mb-4 flex flex-col items-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 text-center transition-colors ${dragging ? "border-accent bg-accent/5" : "border-border"}`}>
+        className={`mb-4 flex flex-col items-center gap-2 rounded-lg border border-dashed px-4 py-8 text-center transition-colors duration-micro ease-out ${dragging ? "border-accent bg-accent-soft" : "border-edge bg-surface"}`}>
         <UploadCloud className="h-6 w-6 text-muted" aria-hidden />
         <p className="text-sm">Drag files here or</p>
         <input ref={inputRef} type="file" multiple hidden data-testid="file-input" aria-label="Choose files"
@@ -64,15 +64,15 @@ export default function DocumentsPage() {
         <Button variant="secondary" onClick={() => inputRef.current?.click()} loading={upload.isPending}>Choose files</Button>
         {progress !== null && (
           <div className="w-full max-w-xs" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
-            <div className="h-1.5 overflow-hidden rounded bg-raised"><div className="h-full bg-accent transition-all" style={{ width: `${progress}%` }} /></div>
-            <p className="mt-1 text-xs text-muted">{progress}% uploaded</p>
+            <div className="h-1.5 overflow-hidden rounded bg-sunk"><div className="h-full bg-accent" style={{ width: `${progress}%` }} /></div>
+            <p className="measured mt-1 text-xs text-muted">{progress}% uploaded</p>
           </div>
         )}
       </div>
 
       {messages.length > 0 && (
         <ul className="mb-4 space-y-1" aria-live="polite">
-          {messages.map((m, i) => <li key={i} className={`text-sm ${m.tone === "ok" ? "text-ok" : m.tone === "warn" ? "text-warn" : "text-danger"}`}>{m.text}</li>)}
+          {messages.map((m, i) => <li key={i} className={`text-sm ${m.tone === "ok" ? "text-ok" : m.tone === "warn" ? "text-accent" : "text-danger"}`}>{m.text}</li>)}
         </ul>
       )}
 
@@ -89,17 +89,17 @@ export default function DocumentsPage() {
           </Select>
         </div>
         {list.isLoading ? <Spinner label="Loading documents" /> : list.error ? <ErrorState error={list.error} onRetry={() => void list.refetch()} /> :
-          list.data!.items.length === 0 ? <EmptyState title="No documents found">Upload a file above, or adjust the filters.</EmptyState> : (
+          list.data!.items.length === 0 ? <EmptyState bare title="No documents found">Upload a file above, or adjust the filters.</EmptyState> : (
             <>
               <Table head={["Name", "Type", "Size", "Status", "Category", "Uploaded"]}>
                 {list.data!.items.map((d) => (
                   <tr key={d.id}>
-                    <td className="px-3 py-2"><Link to={`/documents/${d.id}`} className="text-accent hover:underline">{d.filename}</Link>{d.is_demo && <span className="ml-2"><Badge tone="warn">demo</Badge></span>}</td>
-                    <td className="px-3 py-2 uppercase text-muted">{d.extension}</td>
-                    <td className="px-3 py-2 tabular-nums text-muted">{formatBytes(d.size_bytes)}</td>
+                    <td className="px-3 py-2"><Link to={`/documents/${d.id}`} className="link">{d.filename}</Link>{d.is_demo && <span className="ml-2"><Badge tone="warn">demo</Badge></span>}</td>
+                    <td className="measured px-3 py-2 uppercase text-muted">{d.extension}</td>
+                    <td className="measured px-3 py-2 text-muted">{formatBytes(d.size_bytes)}</td>
                     <td className="px-3 py-2"><Badge tone={STATUS_TONE[d.status] ?? "muted"}>{d.status}</Badge></td>
-                    <td className="px-3 py-2">{d.category ?? <span className="text-muted">—</span>}{d.verified_category && <span className="ml-1 text-xs text-ok" title="Human verified">✓</span>}</td>
-                    <td className="px-3 py-2 text-muted">{formatDate(d.created_at)}</td>
+                    <td className="px-3 py-2">{d.category ?? <span className="text-muted">none</span>}{d.verified_category && <span className="ml-1.5 inline-flex align-middle text-ok" title="Human verified"><Check className="h-3.5 w-3.5" aria-hidden /></span>}</td>
+                    <td className="measured px-3 py-2 text-muted">{formatDate(d.created_at)}</td>
                   </tr>
                 ))}
               </Table>
@@ -107,7 +107,7 @@ export default function DocumentsPage() {
                 <span>{list.data!.total} documents</span>
                 <div className="flex items-center gap-2">
                   <Button variant="secondary" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button>
-                  <span>Page {page} of {totalPages}</span>
+                  <span className="measured">Page {page} of {totalPages}</span>
                   <Button variant="secondary" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Next</Button>
                 </div>
               </div>

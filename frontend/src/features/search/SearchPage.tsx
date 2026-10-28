@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Badge, Button, Card, EmptyState, ErrorState, Input, PageHeader, Select, Spinner } from "../../components/ui";
+import { Badge, Button, EmptyState, ErrorState, Input, PageHeader, Select, Spinner } from "../../components/ui";
 import { api } from "../../lib/api";
 import { ALLOWED_EXTENSIONS, formatDate, highlightParts } from "../../lib/utils";
 import type { SearchMode } from "../../types";
@@ -50,31 +50,29 @@ export default function SearchPage() {
         results.error ? <ErrorState error={results.error} onRetry={() => void results.refetch()} /> :
         results.data!.results.length === 0 ? <EmptyState title="No matching passages">Try different words, another mode, or fewer filters.</EmptyState> : (
           <>
-            <p className="mb-3 text-sm text-muted">{results.data!.total} passages · {results.data!.mode} · results are capped at the top 200 candidates</p>
-            <ul className="space-y-3">
+            <p className="mb-3 text-sm text-muted"><span className="measured">{results.data!.total}</span> passages in {results.data!.mode} mode. Results are capped at the top 200 candidates.</p>
+            <ul className="panels">
               {results.data!.results.map((r) => (
-                <li key={r.chunk_id}>
-                  <Card>
-                    <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                      <Link to={`/documents/${r.document_id}`} className="font-medium text-accent hover:underline">{r.filename}</Link>
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
-                        <span>{r.page ? `page ${r.page}` : "page n/a"}</span>
-                        {r.category && <Badge tone="accent">{r.category}</Badge>}
-                        <span>{formatDate(r.created_at)}</span>
-                        <Badge tone="info">score {r.score.toFixed(3)}</Badge>
-                      </div>
+                <li key={r.chunk_id} className="p-5">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <Link to={`/documents/${r.document_id}`} className="link font-medium">{r.filename}</Link>
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
+                      <span className="measured">{r.page ? `page ${r.page}` : "page n/a"}</span>
+                      {r.category && <Badge tone="info">{r.category}</Badge>}
+                      <span className="measured">{formatDate(r.created_at)}</span>
+                      <Badge tone="info">score {r.score.toFixed(3)}</Badge>
                     </div>
-                    <p className="text-sm leading-relaxed">
-                      {highlightParts(r.excerpt, r.highlights).map((p, i) => (p.hit ? <mark key={i}>{p.text}</mark> : <span key={i}>{p.text}</span>))}
-                    </p>
-                    <div className="mt-2 text-xs text-muted">keyword {r.keyword_score.toFixed(2)}{r.semantic_score !== null && ` · semantic ${r.semantic_score.toFixed(2)}`}</div>
-                  </Card>
+                  </div>
+                  <p className="max-w-3xl text-base leading-relaxed text-fg-2">
+                    {highlightParts(r.excerpt, r.highlights).map((p, i) => (p.hit ? <mark key={i}>{p.text}</mark> : <span key={i}>{p.text}</span>))}
+                  </p>
+                  <div className="measured mt-3 flex gap-4 text-muted"><span>keyword {r.keyword_score.toFixed(2)}</span>{r.semantic_score !== null && <span>semantic {r.semantic_score.toFixed(2)}</span>}</div>
                 </li>
               ))}
             </ul>
             <div className="mt-4 flex items-center justify-center gap-3 text-sm text-muted">
               <Button variant="secondary" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button>
-              <span>Page {page} of {totalPages}</span>
+              <span className="measured">Page {page} of {totalPages}</span>
               <Button variant="secondary" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Next</Button>
             </div>
           </>

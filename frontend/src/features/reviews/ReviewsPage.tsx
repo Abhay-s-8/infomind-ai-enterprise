@@ -19,14 +19,14 @@ function ReviewCard({ item, categories }: { item: ReviewItem; categories: string
   return (
     <Card>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <Link to={`/documents/${item.document_id}`} className="font-medium text-accent hover:underline">{item.filename}</Link>
-        <div className="flex items-center gap-2 text-xs text-muted">
-          <span>model {item.model_version}</span>
+        <Link to={`/documents/${item.document_id}`} className="link font-medium">{item.filename}</Link>
+        <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
+          <span className="measured">model {item.model_version}</span>
           <Badge tone="warn">predicted: {item.predicted_category} ({item.score?.toFixed(2)}{item.score_type === "decision_score" ? ", decision value" : ", uncalibrated"})</Badge>
-          <span>{formatDate(item.created_at)}</span>
+          <span className="measured">{formatDate(item.created_at)}</span>
         </div>
       </div>
-      <p className="mb-3 line-clamp-4 text-sm text-muted">{item.text_preview}</p>
+      <p className="measured mb-4 line-clamp-4 text-fg-2">{item.text_preview}</p>
       <div className="flex flex-wrap items-end gap-3">
         <label className="text-sm"><span className="mb-1 block text-muted">Final category</span>
           <Select aria-label={`Category for ${item.filename}`} value={category} onChange={(e) => setCategory(e.target.value)} className="min-w-[14rem]">
@@ -57,9 +57,9 @@ export default function ReviewsPage() {
         )}
       {history.data && history.data.length > 0 && (
         <Card title="Recent decisions" className="mt-6">
-          <ul className="space-y-1 text-sm">
+          <ul className="space-y-2 text-sm">
             {history.data.slice(0, 10).map((h) => (
-              <li key={h.id} className="flex flex-wrap gap-2"><span className="text-muted">{formatDate(h.created_at)}</span><Badge tone={h.decision === "confirm" ? "ok" : "warn"}>{h.decision}</Badge><span>{h.predicted ?? "—"} → {h.final}</span></li>
+              <li key={h.id} className="flex flex-wrap gap-2"><span className="measured text-muted">{formatDate(h.created_at)}</span><Badge tone={h.decision === "confirm" ? "ok" : "warn"}>{h.decision}</Badge><span>predicted {h.predicted ?? "none"}, final {h.final}</span></li>
             ))}
           </ul>
         </Card>

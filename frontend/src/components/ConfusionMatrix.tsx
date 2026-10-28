@@ -3,7 +3,7 @@ export function ConfusionMatrix({ labels, matrix }: { labels: string[]; matrix: 
   const short = (s: string) => s.split(/\s+/).map((w) => w[0]).join("").toUpperCase();
   return (
     <div className="overflow-x-auto">
-      <table className="text-center text-xs" aria-label="Confusion matrix">
+      <table className="text-center text-sm" aria-label="Confusion matrix">
         <thead>
           <tr><th className="p-1 text-muted">true ↓ / pred →</th>{labels.map((l) => <th key={l} scope="col" title={l} className="p-1 font-medium text-muted">{short(l)}</th>)}</tr>
         </thead>
@@ -14,14 +14,14 @@ export function ConfusionMatrix({ labels, matrix }: { labels: string[]; matrix: 
               <tr key={labels[i]}>
                 <th scope="row" title={labels[i]} className="p-1 text-left font-medium text-muted">{labels[i]}</th>
                 {row.map((v, j) => (
-                  <td key={j} className="h-8 w-10 border border-border tabular-nums" style={{ background: `rgb(var(--${i === j ? "ok" : "danger"}) / ${v === 0 ? 0 : 0.15 + 0.6 * (v / total)})` }}>{v}</td>
+                  <td key={j} className="measured h-9 w-11 border border-border" style={{ background: v === 0 ? "transparent" : `color-mix(in oklab, var(--color-${i === j ? "ok" : "bad"}) ${Math.round((0.15 + 0.6 * (v / total)) * 100)}%, transparent)` }}>{v}</td>
                 ))}
               </tr>
             );
           })}
         </tbody>
       </table>
-      <p className="mt-2 text-xs text-muted">Abbreviations: {labels.map((l) => `${short(l)} = ${l}`).join(", ")}</p>
+      <p className="mt-3 text-sm text-muted">Abbreviations: {labels.map((l) => `${short(l)} = ${l}`).join(", ")}</p>
     </div>
   );
 }

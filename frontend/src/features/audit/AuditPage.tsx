@@ -18,24 +18,24 @@ export default function AuditPage() {
           <option value="">All outcomes</option><option>success</option><option>failure</option><option>denied</option>
         </Select>}>
         {logs.isLoading ? <Spinner label="Loading audit events" /> : logs.error ? <ErrorState error={logs.error} onRetry={() => void logs.refetch()} /> :
-          logs.data!.length === 0 ? <EmptyState title="No audit events match" /> : (
+          logs.data!.length === 0 ? <EmptyState bare title="No audit events match" /> : (
             <>
               <Table head={["Time", "Action", "Outcome", "Actor", "Target", "Request ID", "Detail"]}>
                 {logs.data!.map((e) => (
                   <tr key={e.id}>
-                    <td className="whitespace-nowrap px-3 py-2 text-muted">{formatDate(e.created_at)}</td>
-                    <td className="px-3 py-2 font-mono text-xs">{e.action}</td>
+                    <td className="measured whitespace-nowrap px-3 py-2 text-muted">{formatDate(e.created_at)}</td>
+                    <td className="measured px-3 py-2">{e.action}</td>
                     <td className="px-3 py-2"><Badge tone={tone(e.outcome)}>{e.outcome}</Badge></td>
-                    <td className="px-3 py-2 font-mono text-xs text-muted">{e.actor_id?.slice(0, 8) ?? "—"}</td>
-                    <td className="px-3 py-2 font-mono text-xs text-muted">{e.target_type ? `${e.target_type}:${e.target_id?.slice(0, 8)}` : "—"}</td>
-                    <td className="px-3 py-2 font-mono text-xs text-muted">{e.request_id?.slice(0, 8) ?? "—"}</td>
+                    <td className="measured px-3 py-2 text-muted">{e.actor_id?.slice(0, 8) ?? "none"}</td>
+                    <td className="measured px-3 py-2 text-muted">{e.target_type ? `${e.target_type}:${e.target_id?.slice(0, 8)}` : "none"}</td>
+                    <td className="measured px-3 py-2 text-muted">{e.request_id?.slice(0, 8) ?? "none"}</td>
                     <td className="px-3 py-2 text-muted">{e.detail ?? ""}</td>
                   </tr>
                 ))}
               </Table>
               <div className="mt-4 flex items-center justify-end gap-3 text-sm text-muted">
                 <Button variant="secondary" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button>
-                <span>Page {page}</span>
+                <span className="measured">Page {page}</span>
                 <Button variant="secondary" disabled={logs.data!.length < 50} onClick={() => setPage(page + 1)}>Next</Button>
               </div>
             </>

@@ -34,16 +34,16 @@ export default function ClassificationPage() {
         <div className="space-y-4">
           <Card title="Active model" action={<SourceNote kind={m.dataset_info.name === "synthetic" ? "synthetic" : "offline"} />}>
             <dl className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-              <div><dt className="text-muted">Version</dt><dd className="break-all font-mono text-xs">{m.version}</dd></div>
+              <div><dt className="text-muted">Version</dt><dd className="measured break-all">{m.version}</dd></div>
               <div><dt className="text-muted">Algorithm</dt><dd>{m.algorithm}</dd></div>
-              <div><dt className="text-muted">Trained</dt><dd>{formatDate(m.dataset_info.trained_at)}</dd></div>
+              <div><dt className="text-muted">Trained</dt><dd className="measured">{formatDate(m.dataset_info.trained_at)}</dd></div>
               <div><dt className="text-muted">Score type</dt><dd>{m.score_type === "probability_uncalibrated" ? "probability (uncalibrated)" : "decision value (not a probability)"}</dd></div>
-              <div><dt className="text-muted">Dataset</dt><dd>{m.dataset_info.name}: {m.dataset_info.total} examples</dd></div>
-              <div><dt className="text-muted">Split</dt><dd>{m.dataset_info.train} train / {m.dataset_info.validation} val / {m.dataset_info.test} test</dd></div>
+              <div><dt className="text-muted">Dataset</dt><dd><span className="measured">{m.dataset_info.name}: {m.dataset_info.total}</span> examples</dd></div>
+              <div><dt className="text-muted">Split</dt><dd className="measured">{m.dataset_info.train} train / {m.dataset_info.validation} val / {m.dataset_info.test} test</dd></div>
               <div><dt className="text-muted">Selection</dt><dd>{m.dataset_info.selection_criterion}</dd></div>
-              <div><dt className="text-muted">Evaluated on</dt><dd>{m.dataset_info.evaluation_split} · n={m.metrics.n_evaluated}</dd></div>
+              <div><dt className="text-muted">Evaluated on</dt><dd className="measured">{m.dataset_info.evaluation_split}, n={m.metrics.n_evaluated}</dd></div>
             </dl>
-            {m.dataset_info.caveat && <p className="mt-3 rounded-md bg-warn/10 px-3 py-2 text-xs text-warn">{m.dataset_info.caveat}</p>}
+            {m.dataset_info.caveat && <p className="mt-4 rounded-md border border-border bg-accent-soft px-3 py-2 text-sm text-accent">{m.dataset_info.caveat}</p>}
           </Card>
 
           <Card title="Model comparison (held-out test split)">
@@ -51,9 +51,9 @@ export default function ClassificationPage() {
               {Object.entries(m.comparison).map(([name, c]) => (
                 <tr key={name}>
                   <td className="px-3 py-2">{name}{name === m.algorithm && <span className="ml-2"><Badge tone="ok">selected</Badge></span>}</td>
-                  <td className="px-3 py-2 tabular-nums">{pct(c.test.accuracy)}</td><td className="px-3 py-2 tabular-nums">{pct(c.test.macro_precision)}</td>
-                  <td className="px-3 py-2 tabular-nums">{pct(c.test.macro_recall)}</td><td className="px-3 py-2 tabular-nums">{pct(c.test.macro_f1)}</td>
-                  <td className="px-3 py-2 tabular-nums">{pct(c.test.weighted_f1)}</td><td className="px-3 py-2 tabular-nums">{c.test.n_evaluated}</td>
+                  <td className="measured px-3 py-2">{pct(c.test.accuracy)}</td><td className="measured px-3 py-2">{pct(c.test.macro_precision)}</td>
+                  <td className="measured px-3 py-2">{pct(c.test.macro_recall)}</td><td className="measured px-3 py-2">{pct(c.test.macro_f1)}</td>
+                  <td className="measured px-3 py-2">{pct(c.test.weighted_f1)}</td><td className="measured px-3 py-2">{c.test.n_evaluated}</td>
                 </tr>
               ))}
             </Table>
@@ -63,7 +63,7 @@ export default function ClassificationPage() {
             <Card title="Per-class metrics">
               <Table head={["Class", "Precision", "Recall", "F1", "Support"]}>
                 {Object.entries(m.metrics.per_class).map(([c, v]) => (
-                  <tr key={c}><td className="px-3 py-2">{c}</td><td className="px-3 py-2 tabular-nums">{v.precision.toFixed(2)}</td><td className="px-3 py-2 tabular-nums">{v.recall.toFixed(2)}</td><td className="px-3 py-2 tabular-nums">{v.f1.toFixed(2)}</td><td className="px-3 py-2 tabular-nums">{v.support}</td></tr>
+                  <tr key={c}><td className="px-3 py-2">{c}</td><td className="measured px-3 py-2">{v.precision.toFixed(2)}</td><td className="measured px-3 py-2">{v.recall.toFixed(2)}</td><td className="measured px-3 py-2">{v.f1.toFixed(2)}</td><td className="measured px-3 py-2">{v.support}</td></tr>
                 ))}
               </Table>
             </Card>
@@ -74,12 +74,12 @@ export default function ClassificationPage() {
 
       <Card title="Try the classifier" className="mt-4">
         <textarea aria-label="Text to classify" value={text} onChange={(e) => setText(e.target.value)} rows={4} maxLength={50000}
-          placeholder="Paste text to classify…" className="w-full rounded-md border border-border bg-bg p-3 text-sm" />
+          placeholder="Paste text to classify…" className="w-full rounded-md border border-edge bg-sunk p-3 text-sm placeholder:text-muted transition-colors duration-micro ease-out hover:border-fg-2 focus:border-accent" />
         <div className="mt-3 flex items-center gap-3">
           <Button variant="secondary" disabled={!text.trim() || noModel} loading={predict.isPending} onClick={() => predict.mutate()}>Classify</Button>
           {predict.data && (
             <span className="text-sm">
-              <Badge tone="accent">{predict.data.category}</Badge> <span className="text-muted">score {predict.data.score.toFixed(3)} ({predict.data.score_type === "decision_score" ? "decision value" : "uncalibrated probability"})</span>
+              <Badge tone="info">{predict.data.category}</Badge> <span className="measured text-muted">score {predict.data.score.toFixed(3)} ({predict.data.score_type === "decision_score" ? "decision value" : "uncalibrated probability"})</span>
               {predict.data.low_confidence && <span className="ml-2"><Badge tone="warn">low confidence</Badge></span>}
             </span>
           )}
@@ -90,7 +90,7 @@ export default function ClassificationPage() {
       {models.data && models.data.length > 1 && (
         <Card title="Model history" className="mt-4">
           <Table head={["Version", "Algorithm", "Macro F1", "Created", "Active"]}>
-            {models.data.map((v) => <tr key={v.id}><td className="px-3 py-2 font-mono text-xs">{v.version}</td><td className="px-3 py-2">{v.algorithm}</td><td className="px-3 py-2 tabular-nums">{pct(v.headline.macro_f1)}</td><td className="px-3 py-2">{formatDate(v.created_at)}</td><td className="px-3 py-2">{v.is_active ? "yes" : ""}</td></tr>)}
+            {models.data.map((v) => <tr key={v.id}><td className="measured px-3 py-2">{v.version}</td><td className="px-3 py-2">{v.algorithm}</td><td className="measured px-3 py-2">{pct(v.headline.macro_f1)}</td><td className="measured px-3 py-2">{formatDate(v.created_at)}</td><td className="px-3 py-2">{v.is_active ? "yes" : ""}</td></tr>)}
           </Table>
         </Card>
       )}

@@ -43,32 +43,38 @@ export default function LoginPage({ initialMode = "login" }: { initialMode?: Mod
   };
 
   return (
-    <div className="flex min-h-full items-center justify-center p-4">
-      <div className="w-full max-w-sm rounded-lg border border-border bg-surface p-6">
-        <Link to="/" className="mb-4 inline-block text-xs text-muted hover:text-fg">← Back to home</Link>
-        <h1 className="text-lg font-semibold">InfoMind AI Enterprise</h1>
-        <p className="mb-5 mt-1 text-sm text-muted">{mode === "login" ? "Sign in to your workspace" : "Create an analyst account"}</p>
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-          {mode === "register" && (
-            <Field label="Full name" error={errors.full_name?.message}><Input {...register("full_name")} autoComplete="name" /></Field>
-          )}
-          <Field label="Email" error={errors.email?.message}><Input type="email" autoComplete="email" {...register("email")} /></Field>
-          <Field label="Password" error={errors.password?.message}>
-            <Input type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} {...register("password")} />
-          </Field>
-          {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-          {notice && <p role="status" className="text-sm text-ok">{notice}</p>}
-          <Button type="submit" loading={isSubmitting} className="w-full">{mode === "login" ? "Sign in" : "Create account"}</Button>
-        </form>
-        {(registrationOpen || mode === "register") && (
-          <button className="mt-4 text-sm text-accent underline" onClick={() => { setWanted(mode === "login" ? "register" : "login"); setError(null); }}>
-            {mode === "login" ? "Need an account? Register" : "Have an account? Sign in"}
-          </button>
-        )}
-        {registrationClosed && (
-          <p className="mt-4 text-sm text-muted">{initialMode === "register" ? "Registration is closed on this site. " : ""}New accounts are created by an administrator.</p>
-        )}
-        <p className="mt-6 text-xs text-muted">Educational prototype. Use synthetic or public data only.</p>
+    <div className="flex min-h-full flex-col">
+      <div className="mx-auto w-full max-w-7xl px-4 py-4 md:px-8">
+        <Link to="/" className="link text-sm text-muted">← Back to home</Link>
+      </div>
+      <div className="flex flex-1 items-center justify-center px-4 pb-16">
+        <div className="w-full max-w-sm">
+          <h1 className="text-3xl">InfoMind AI Enterprise</h1>
+          <p className="mb-8 mt-2 text-base text-muted">{mode === "login" ? "Sign in to your workspace" : "Create an analyst account"}</p>
+          <div className="rounded-lg border border-border bg-surface p-6">
+            <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+              {mode === "register" && (
+                <Field label="Full name" error={errors.full_name?.message}><Input {...register("full_name")} autoComplete="name" /></Field>
+              )}
+              <Field label="Email" error={errors.email?.message}><Input type="email" autoComplete="email" {...register("email")} /></Field>
+              <Field label="Password" error={errors.password?.message}>
+                <Input type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} {...register("password")} />
+              </Field>
+              {error && <p role="alert" className="text-sm text-danger">{error}</p>}
+              {notice && <p role="status" className="text-sm text-ok">{notice}</p>}
+              <Button type="submit" loading={isSubmitting} className="w-full">{mode === "login" ? "Sign in" : "Create account"}</Button>
+            </form>
+            {(registrationOpen || mode === "register") && (
+              <button className="link mt-4 text-sm" onClick={() => { setWanted(mode === "login" ? "register" : "login"); setError(null); }}>
+                {mode === "login" ? "Need an account? Register" : "Have an account? Sign in"}
+              </button>
+            )}
+            {registrationClosed && (
+              <p className="mt-4 text-sm text-muted">{initialMode === "register" ? "Registration is closed on this site. " : ""}New accounts are created by an administrator.</p>
+            )}
+          </div>
+          <p className="mt-6 text-sm text-muted">Educational prototype. Use synthetic or public data only.</p>
+        </div>
       </div>
     </div>
   );

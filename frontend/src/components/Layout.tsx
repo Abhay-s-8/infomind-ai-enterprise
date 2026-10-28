@@ -44,55 +44,56 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-full">
-      <aside className={cn("fixed inset-y-0 left-0 z-30 w-60 shrink-0 border-r border-border bg-surface transition-transform md:static md:translate-x-0", open ? "translate-x-0" : "-translate-x-full")}>
+      <aside className={cn("fixed inset-y-0 left-0 z-30 w-60 shrink-0 border-r border-border bg-surface transition-transform duration-short ease-out md:static md:translate-x-0", open ? "translate-x-0" : "-translate-x-full")}>
         <div className="flex h-14 items-center justify-between border-b border-border px-4">
           <div>
-            <div className="text-sm font-semibold">InfoMind AI</div>
-            <div className="text-[10px] uppercase tracking-widest text-muted">Enterprise · prototype</div>
+            <div className="text-base font-medium tracking-tight">InfoMind AI</div>
+            <div className="text-xs text-muted">Enterprise prototype</div>
           </div>
-          <button className="md:hidden" aria-label="Close menu" onClick={() => setOpen(false)}><X className="h-5 w-5" /></button>
+          <button className="rounded-md p-2 text-muted hover:bg-sunk hover:text-fg md:hidden" aria-label="Close menu" onClick={() => setOpen(false)}><X className="h-5 w-5" /></button>
         </div>
         <nav aria-label="Primary" className="space-y-1 p-3">
           {items.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} onClick={() => setOpen(false)}
-              className={({ isActive }) => cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors", isActive ? "bg-accent/15 text-accent" : "text-muted hover:bg-raised hover:text-fg")}>
+              className={({ isActive }) => cn("flex min-h-9 items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors duration-micro ease-out", isActive ? "bg-accent-soft text-accent" : "text-muted hover:bg-sunk hover:text-fg active:bg-bg")}>
               <Icon className="h-4 w-4" aria-hidden /> {label}
             </NavLink>
           ))}
         </nav>
       </aside>
-      {open && <div className="fixed inset-0 z-20 bg-black/50 md:hidden" onClick={() => setOpen(false)} aria-hidden />}
+      {open && <div className="fixed inset-0 z-20 bg-bg/80 md:hidden" onClick={() => setOpen(false)} aria-hidden />}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-border bg-surface/90 px-4 backdrop-blur">
-          <button className="md:hidden" aria-label="Open menu" onClick={() => setOpen(true)}><Menu className="h-5 w-5" /></button>
+        <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-border bg-surface px-4">
+          <button className="rounded-md p-2 text-muted hover:bg-sunk hover:text-fg md:hidden" aria-label="Open menu" onClick={() => setOpen(true)}><Menu className="h-5 w-5" /></button>
           {analystView && (
             <form onSubmit={submitSearch} role="search" className="relative max-w-md flex-1">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted" aria-hidden />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted" aria-hidden />
               <input value={q} onChange={(e) => setQ(e.target.value)} aria-label="Global search" placeholder="Search documents…"
-                className="w-full rounded-md border border-border bg-bg py-2 pl-9 pr-3 text-sm" />
+                className="w-full rounded-md border border-edge bg-sunk py-2 pl-9 pr-3 text-sm placeholder:text-muted transition-colors duration-micro ease-out hover:border-fg-2 focus:border-accent" />
             </form>
           )}
           <div className="ml-auto flex items-center gap-3 text-sm">
             {analystView && (
-              <span className="hidden items-center gap-2 text-xs text-muted sm:flex" title="Documents currently being processed">
-                <span className={cn("h-2 w-2 rounded-full", ready ? (ready.database.ok && ready.vector_store.ok ? "bg-ok" : "bg-danger") : "bg-muted")} aria-hidden />
-                {ready ? (ready.database.ok && ready.vector_store.ok ? "System online" : "System degraded") : "Checking…"}
-                {pending > 0 && <span className="rounded-full bg-warn/15 px-2 py-0.5 text-warn">{pending} processing</span>}
+              <span className="hidden items-center gap-3 text-sm sm:flex" title="Documents currently being processed">
+                <span className={ready ? (ready.database.ok && ready.vector_store.ok ? "text-ok" : "text-danger") : "text-muted"}>
+                  {ready ? (ready.database.ok && ready.vector_store.ok ? "System online" : "System degraded") : "Checking…"}
+                </span>
+                {pending > 0 && <span className="measured rounded border border-border bg-cool-soft px-1.5 py-0.5 text-xs text-cool">{pending} processing</span>}
               </span>
             )}
-            <button onClick={toggleTheme} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`} className="rounded-md p-2 text-muted hover:bg-raised hover:text-fg">
+            <button onClick={toggleTheme} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`} className="rounded-md p-2 text-muted transition-colors duration-micro ease-out hover:bg-sunk hover:text-fg active:bg-bg">
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
             <div className="hidden text-right leading-tight sm:block">
-              <div className="text-xs">{user?.email}</div>
-              <div className="text-[10px] uppercase tracking-wide text-muted">{user?.role}</div>
+              <div className="text-sm">{user?.email}</div>
+              <div className="text-xs text-muted">{user?.role}</div>
             </div>
-            <button onClick={() => void logout()} aria-label="Log out" className="rounded-md p-2 text-muted hover:bg-raised hover:text-fg"><LogOut className="h-4 w-4" /></button>
+            <button onClick={() => void logout()} aria-label="Log out" className="rounded-md p-2 text-muted transition-colors duration-micro ease-out hover:bg-sunk hover:text-fg active:bg-bg"><LogOut className="h-4 w-4" /></button>
           </div>
         </header>
         <main className="mx-auto w-full max-w-7xl flex-1 p-4 md:p-6"><Outlet /></main>
-        <footer className="border-t border-border px-6 py-3 text-xs text-muted">
+        <footer className="border-t border-border px-6 py-3 text-sm text-muted">
           Educational prototype. Use synthetic or public data only. Not approved for classified or operational use.
         </footer>
       </div>
