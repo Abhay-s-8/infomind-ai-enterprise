@@ -118,6 +118,28 @@ def test_missing_original_file_is_reported_cleanly_without_touching_the_document
     assert not ok and err == document_service.FILE_GONE and str(get_settings().storage_dir) not in err
 
 
+def test_missing_model_file_skips_classification_instead_of_failing_the_document(client, analyst, upload_and_process):
+    """Seen on a host with temporary storage: a new instance retrains and records a model whose file only it has, while
+    the old instance (same database) is still processing documents."""
+    from pathlib import Path
+
+    from app.models import Document
+    from app.services import classification_service
+
+    with SessionLocal() as db:
+        mv = classification_service.train_model(db)
+        artifact = Path(mv.artifact_path)
+    artifact.unlink()
+    classification_service._cache.clear()
+    doc_id = upload_and_process(analyst, "fleet.txt", FLEET)
+    with SessionLocal() as db:
+        doc = db.get(Document, doc_id)
+        assert doc.status == "completed" and doc.error_message is None  # indexed and searchable
+    detail = client.get(f"/api/v1/documents/{doc_id}", headers=analyst).json()
+    assert detail["prediction"] is None  # classification was skipped, not faked
+    assert client.post("/api/v1/search/semantic", headers=analyst, json={"query": "fleet budget"}).json()["results"]
+
+
 def test_reindex_command_prints_what_it_did(client, analyst, upload_and_process, capsys):
     upload_and_process(analyst, "fleet.txt", FLEET)
     cli.cmd_reindex(argparse.Namespace(if_needed=True))

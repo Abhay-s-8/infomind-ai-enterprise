@@ -1,3 +1,6 @@
+import logging
+from pathlib import Path
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -14,6 +17,7 @@ from app.models import (
     _now,
 )
 
+log = logging.getLogger("infomind.classification")
 _cache: dict[str, training.LoadedModel] = {}
 
 
@@ -59,6 +63,11 @@ def classify_document(db: Session, doc: Document) -> ClassificationPrediction | 
     """Store a machine prediction. Never touches VerifiedClassification (human labels are never overwritten)."""
     mv = active_model_version(db)
     if mv is None or not doc.extracted_text:
+        return None
+    if not Path(mv.artifact_path).exists():
+        # The model file lives on this instance's disk; on hosts with temporary storage (or while a new instance is
+        # starting against the same database) it can be absent. Skip classification rather than failing the document.
+        log.warning("Active model %s has no artifact on this instance; classification skipped", mv.version)
         return None
     pred = load_model(mv).predict(doc.extracted_text[:20000], get_settings().low_confidence_threshold)
     for old in db.scalars(select(ClassificationPrediction).where(

@@ -102,6 +102,8 @@ def process_document(db: Session, document_id: str) -> tuple[bool, bool]:
     doc.error_message = None
     retryable, embed_error = False, None
     try:
+        if not storage_path(doc.storage_id).exists():  # check the original explicitly so no other missing file is blamed
+            return _fail(db, doc, FILE_GONE)
         set_status(db, doc, DocStatus.extracting)
         pages = extraction_service.extract_pages(storage_path(doc.storage_id), doc.extension)
         if not pages:
@@ -144,8 +146,6 @@ def process_document(db: Session, document_id: str) -> tuple[bool, bool]:
             return False, retryable
         set_status(db, doc, DocStatus.completed)
         return True, False
-    except FileNotFoundError:  # never echo the exception: it contains a server path
-        return _fail(db, doc, FILE_GONE)
     except (extraction_service.ValidationError, ValueError) as exc:
         return _fail(db, doc, f"Could not read the document: {exc}" if not isinstance(exc, extraction_service.ValidationError)
                      else str(exc))

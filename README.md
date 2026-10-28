@@ -82,7 +82,7 @@ Ollama stays on the Windows host (GPU passthrough to Docker on Windows is not as
 ```powershell
 .\scripts\test.ps1       # ruff + pytest (backend), tsc + vitest (frontend)
 ```
-Last run on this machine: backend **88 passed**, `ruff` clean; frontend **28 passed**, `tsc` clean. Tests use SQLite, embedded Qdrant, the hashing embedder and a scripted fake LLM — no model downloads.
+Last run on this machine: backend **89 passed**, `ruff` clean; frontend **28 passed**, `tsc` clean. Tests use SQLite, embedded Qdrant, the hashing embedder and a scripted fake LLM — no model downloads.
 
 **Also verified on this machine (2026-10-28):**
 - `docker compose up --build`: all five containers (PostgreSQL 16, Qdrant, API, worker, frontend) build and run. The API container runs `alembic upgrade head` against PostgreSQL (revision `0001`, 16 tables), the admin is seeded, 14 demo documents reach `completed` through the worker with real `nomic-embed-text` embeddings, and `/health/ready` reports database, vector store and Ollama OK.
