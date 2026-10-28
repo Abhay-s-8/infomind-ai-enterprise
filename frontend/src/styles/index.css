@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root[data-theme="dark"] {
+  --bg: 15 17 21; --surface: 22 25 31; --raised: 30 34 42; --border: 44 49 59;
+  --fg: 232 234 238; --muted: 142 150 163; --accent: 99 152 255; --accent-fg: 10 14 22;
+  --ok: 74 201 138; --warn: 235 177 70; --danger: 240 95 95; --info: 120 180 235;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg: 244 245 247; --surface: 255 255 255; --raised: 240 242 245; --border: 214 219 227;
+  --fg: 22 26 33; --muted: 98 108 124; --accent: 38 99 220; --accent-fg: 255 255 255;
+  --ok: 18 140 86; --warn: 176 110 10; --danger: 200 50 50; --info: 30 110 170;
+  color-scheme: light;
+}
+html, body, #root { height: 100%; }
+body { @apply bg-bg text-fg font-sans antialiased; }
+:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+mark { background: rgb(var(--accent) / 0.25); color: inherit; border-radius: 2px; padding: 0 1px; }

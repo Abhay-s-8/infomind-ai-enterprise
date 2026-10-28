@@ -1,0 +1,1 @@
+Research Report: Soil Moisture and Crop Yield. This study compares irrigation schedules across three field plots over 18 months. Results indicate a significant correlation between weekly irrigation and yield, with a 12 percent improvement in the treated plots. Limitations include a small sample and a single growing region.

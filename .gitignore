@@ -1,0 +1,14 @@
+.env
+*.db
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.venv/
+node_modules/
+dist/
+data/uploads/
+data/qdrant/
+models/*
+!models/.gitkeep
+data/evaluation/*
+!data/evaluation/.gitkeep

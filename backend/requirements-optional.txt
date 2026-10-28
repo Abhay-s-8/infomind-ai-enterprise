@@ -1,0 +1,4 @@
+# Optional: named-entity recognition (then: python -m spacy download en_core_web_sm)
+spacy>=3.7
+# Optional OCR for scanned PDFs/images needs the Tesseract binary + pytesseract
+pytesseract>=0.3.10

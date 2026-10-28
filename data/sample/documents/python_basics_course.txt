@@ -1,0 +1,1 @@
+Course Syllabus: Python Basics. This course introduces programming fundamentals for beginners across eight weekly lessons. Learning objectives include variables, loops and functions. Assessment consists of quiz questions, two homework assignments and an end-of-course examination.

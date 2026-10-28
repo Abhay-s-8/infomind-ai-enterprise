@@ -1,0 +1,1 @@
+Database Backup Runbook. Full backups of the inventory database run every night at 02:30 and are retained for 35 days. Restoring a backup requires the restore command and a verified checksum. Version compatibility between the backup tool and the server must be checked before installation.

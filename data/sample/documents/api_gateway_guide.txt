@@ -1,0 +1,1 @@
+API Gateway Configuration Guide. The gateway exposes a REST endpoint on port 8443 and validates every request against a JSON schema. Rate limiting defaults to 120 requests per minute per client. Timeout settings can be changed in the gateway.yaml configuration file. Error code GW-502 indicates the upstream service did not respond.

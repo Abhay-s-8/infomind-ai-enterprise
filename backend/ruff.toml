@@ -1,0 +1,7 @@
+line-length = 120
+target-version = "py311"
+extend-exclude = [".venv", "alembic/versions"]
+
+[lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["B008", "E501"]  # FastAPI Depends() in defaults is idiomatic

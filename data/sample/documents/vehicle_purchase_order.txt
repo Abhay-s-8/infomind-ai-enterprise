@@ -1,0 +1,1 @@
+Purchase Order PO-7781. The purchasing department issues this order to Northwind Supplies for six service vehicles at a unit price of $24,500. Payment terms are net 30 days. Approval was granted by the procurement officer on 2025-03-14 and the total of $147,000 is allocated to the fleet cost centre.
