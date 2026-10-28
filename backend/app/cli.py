@@ -39,7 +39,15 @@ def cmd_create_admin(a):
     if len(password) < 10:
         sys.exit("Administrator password must be at least 10 characters (--password or INITIAL_ADMIN_PASSWORD).")
     with SessionLocal() as db:
-        if db.scalar(select(User).where(User.email == a.email.lower())):
+        existing = db.scalar(select(User).where(User.email == a.email.lower()))
+        if existing:
+            if a.reset_password:  # explicit, operator-only (needs shell or environment access to the service)
+                if existing.role != Role.admin.value:
+                    sys.exit(f"{a.email} is not an administrator; refusing to reset its password.")
+                existing.password_hash = hash_password(password)
+                db.commit()
+                print(f"Administrator {a.email} password reset.")
+                return
             if a.if_missing:
                 print(f"Administrator {a.email} already exists; nothing to do.")
                 return
@@ -138,6 +146,7 @@ def main():
     s.add_argument("--email", required=True)
     s.add_argument("--password", help="omit to read INITIAL_ADMIN_PASSWORD from the environment")
     s.add_argument("--if-missing", action="store_true", help="succeed quietly if the user already exists")
+    s.add_argument("--reset-password", action="store_true", help="set the password of an existing administrator")
     s.set_defaults(fn=cmd_create_admin)
     s = sub.add_parser("train")
     s.add_argument("--csv")

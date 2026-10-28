@@ -43,7 +43,8 @@ def test_file_sqlite_uses_wal_and_busy_timeout(tmp_path):
 
 
 def _admin_args(**kw):
-    return argparse.Namespace(**{"email": "Boss@Example.com", "password": None, "if_missing": False, **kw})
+    return argparse.Namespace(**{"email": "Boss@Example.com", "password": None, "if_missing": False,
+                                 "reset_password": False, **kw})
 
 
 def test_create_admin_reads_password_from_env_and_is_idempotent_with_if_missing(monkeypatch, capsys):
@@ -57,6 +58,30 @@ def test_create_admin_reads_password_from_env_and_is_idempotent_with_if_missing(
     assert users[0].password_hash != "a-long-enough-password"
     with pytest.raises(SystemExit, match="already exists"):  # without --if-missing it still refuses
         cli.cmd_create_admin(_admin_args())
+
+
+def test_reset_password_changes_an_existing_admin_only(monkeypatch, capsys):
+    from app.core.security import verify_password
+
+    monkeypatch.setenv("INITIAL_ADMIN_PASSWORD", "first-long-password")
+    cli.cmd_create_admin(_admin_args())
+    monkeypatch.setenv("INITIAL_ADMIN_PASSWORD", "second-long-password")
+    cli.cmd_create_admin(_admin_args(if_missing=True))  # the normal start-up path never changes a password
+    with SessionLocal() as db:
+        assert verify_password("first-long-password", db.scalar(select(User)).password_hash)
+    cli.cmd_create_admin(_admin_args(reset_password=True))
+    assert "password reset" in capsys.readouterr().out
+    with SessionLocal() as db:
+        admin = db.scalar(select(User))
+        assert verify_password("second-long-password", admin.password_hash)
+        assert not verify_password("first-long-password", admin.password_hash)
+        admin.role = Role.analyst.value  # a non-admin account is never reset this way
+        db.commit()
+    with pytest.raises(SystemExit, match="not an administrator"):
+        cli.cmd_create_admin(_admin_args(reset_password=True))
+    monkeypatch.setenv("INITIAL_ADMIN_PASSWORD", "short")
+    with pytest.raises(SystemExit, match="at least 10"):
+        cli.cmd_create_admin(_admin_args(reset_password=True))
 
 
 def test_create_admin_rejects_short_or_missing_passwords(monkeypatch):

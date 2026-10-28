@@ -1,6 +1,8 @@
 #!/bin/sh
 # Container entrypoint: migrate, optional first-run bootstrap, then serve.
 #   INITIAL_ADMIN_EMAIL + INITIAL_ADMIN_PASSWORD  create that administrator if it does not exist yet
+#   RESET_ADMIN_PASSWORD=true                     also set that existing administrator's password to INITIAL_ADMIN_PASSWORD
+#                                                 (use once, then set it back to false)
 #   AUTO_TRAIN=true                               train the classifier on synthetic data if none is active
 #   AUTO_REINDEX=true                             rebuild the vector index from stored text when it is incomplete
 #   SEED_DEMO=true                                add the synthetic demo documents (needs the admin above)
@@ -17,7 +19,11 @@ fi
 alembic upgrade head
 
 if [ -n "$INITIAL_ADMIN_EMAIL" ] && [ -n "$INITIAL_ADMIN_PASSWORD" ]; then
-  python -m app.cli create-admin --email "$INITIAL_ADMIN_EMAIL" --if-missing
+  if [ "$RESET_ADMIN_PASSWORD" = "true" ]; then  # one-shot: set it back to false after the deploy that applies it
+    python -m app.cli create-admin --email "$INITIAL_ADMIN_EMAIL" --reset-password
+  else
+    python -m app.cli create-admin --email "$INITIAL_ADMIN_EMAIL" --if-missing
+  fi
 fi
 
 # Bootstrap conveniences must never keep the API from starting.
