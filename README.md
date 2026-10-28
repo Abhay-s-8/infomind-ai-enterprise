@@ -1,4 +1,4 @@
-﻿# InfoMind AI Enterprise
+# InfoMind AI Enterprise
 
 **AI/ML-Based Intelligent Information Management and Retrieval System** — an educational, research-oriented prototype that ingests documents, classifies them with scikit-learn, indexes them for keyword + semantic search, and answers questions with cited evidence using a local LLM.
 
