@@ -60,8 +60,9 @@ async def lifespan(app: FastAPI):
 
 def create_app() -> FastAPI:
     s = get_settings()
+    dev = s.environment != "production"  # in production neither the docs UI nor the raw schema is served
     app = FastAPI(title=s.app_name, version="0.1.0", lifespan=lifespan,
-                  docs_url="/docs" if s.environment != "production" else None, redoc_url=None)
+                  docs_url="/docs" if dev else None, redoc_url=None, openapi_url="/openapi.json" if dev else None)
     app.add_middleware(CORSMiddleware, allow_origins=s.cors_origin_list, allow_credentials=False,
                        allow_methods=["GET", "POST", "PATCH", "DELETE"], allow_headers=["Authorization", "Content-Type"])
 

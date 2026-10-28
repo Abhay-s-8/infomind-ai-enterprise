@@ -1,14 +1,16 @@
 """Command line entry points:  python -m app.cli <command>
 
   init-db        create tables (development convenience; production uses `alembic upgrade head`)
-  create-admin   create an administrator   (--email, --password)
+  create-admin   create an administrator   (--email, --password or INITIAL_ADMIN_PASSWORD, [--if-missing])
   seed-demo      insert the SYNTHETIC demo corpus for a user and process it
-  train          train + activate the classifier (synthetic data, or --csv path)
+  train          train + activate the classifier (synthetic data, or --csv path; --if-missing to skip if trained)
   export-data    write sample training CSV and demo documents under data/
   evaluate       run the evaluation suite and export JSON/CSV   (--skip-rag to skip the LLM part)
 """
 import argparse
+import os
 import sys
+from pathlib import Path
 
 from sqlalchemy import select
 
@@ -31,10 +33,17 @@ def cmd_init_db(_):
 
 
 def cmd_create_admin(a):
+    """The password may come from INITIAL_ADMIN_PASSWORD so it never appears in a process list or shell history."""
+    password = a.password or os.environ.get("INITIAL_ADMIN_PASSWORD", "")
+    if len(password) < 10:
+        sys.exit("Administrator password must be at least 10 characters (--password or INITIAL_ADMIN_PASSWORD).")
     with SessionLocal() as db:
         if db.scalar(select(User).where(User.email == a.email.lower())):
+            if a.if_missing:
+                print(f"Administrator {a.email} already exists; nothing to do.")
+                return
             sys.exit("User already exists.")
-        db.add(User(email=a.email.lower(), full_name="Administrator", password_hash=hash_password(a.password),
+        db.add(User(email=a.email.lower(), full_name="Administrator", password_hash=hash_password(password),
                     role=Role.admin.value))
         db.commit()
     print(f"Administrator {a.email} created.")
@@ -47,6 +56,10 @@ def cmd_train(a):
 
     df = pd.read_csv(a.csv) if a.csv else None
     with SessionLocal() as db:
+        existing = classification_service.active_model_version(db)
+        if a.if_missing and existing is not None and Path(existing.artifact_path).exists():
+            print(f"Active model {existing.version} already present; nothing to do.")
+            return
         mv = classification_service.train_model(db, df, None, a.csv or "synthetic")
         m = mv.metrics
         print(f"Trained {mv.version} ({mv.algorithm})")
@@ -110,10 +123,12 @@ def main():
     sub.add_parser("init-db").set_defaults(fn=cmd_init_db)
     s = sub.add_parser("create-admin")
     s.add_argument("--email", required=True)
-    s.add_argument("--password", required=True)
+    s.add_argument("--password", help="omit to read INITIAL_ADMIN_PASSWORD from the environment")
+    s.add_argument("--if-missing", action="store_true", help="succeed quietly if the user already exists")
     s.set_defaults(fn=cmd_create_admin)
     s = sub.add_parser("train")
     s.add_argument("--csv")
+    s.add_argument("--if-missing", action="store_true", help="skip when an active model with an artifact exists")
     s.set_defaults(fn=cmd_train)
     s = sub.add_parser("seed-demo")
     s.add_argument("--email", default=get_settings().dev_admin_email or "admin@example.com")

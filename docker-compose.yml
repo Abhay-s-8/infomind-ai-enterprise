@@ -47,6 +47,7 @@ services:
   worker:
     <<: *backend
     command: ["python", "-m", "app.workers.worker"]
+    user: appuser  # this command bypasses start.sh, which is what drops root for the API container
     ports: []
     depends_on: [backend]
 

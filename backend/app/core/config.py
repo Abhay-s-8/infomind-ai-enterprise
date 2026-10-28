@@ -58,6 +58,16 @@ class Settings(BaseSettings):
     def _strip(cls, v: str) -> str:
         return v.strip()
 
+    @field_validator("database_url")
+    @classmethod
+    def _driver(cls, v: str) -> str:
+        """Hosts such as Render hand out `postgres://` / `postgresql://` URLs; this app uses the psycopg 3 driver."""
+        v = v.strip()
+        for prefix in ("postgres://", "postgresql://"):
+            if v.startswith(prefix):
+                return "postgresql+psycopg://" + v[len(prefix):]
+        return v
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

@@ -16,11 +16,15 @@ def make_engine(url: str):
         kwargs: dict = {"connect_args": {"check_same_thread": False}}
         if ":memory:" in url or url == "sqlite://":
             kwargs["poolclass"] = StaticPool
+        in_memory = "poolclass" in kwargs
         eng = create_engine(url, **kwargs)
 
         @event.listens_for(eng, "connect")
-        def _fk_on(dbapi_conn, _):  # SQLite ignores ON DELETE CASCADE unless enabled
-            dbapi_conn.execute("PRAGMA foreign_keys=ON")
+        def _pragmas(dbapi_conn, _):
+            dbapi_conn.execute("PRAGMA foreign_keys=ON")  # SQLite ignores ON DELETE CASCADE unless enabled
+            if not in_memory:  # the API and the in-process worker write to the same file: WAL + a busy timeout
+                dbapi_conn.execute("PRAGMA journal_mode=WAL")
+                dbapi_conn.execute("PRAGMA busy_timeout=15000")
 
         return eng
     return create_engine(url, pool_pre_ping=True)
