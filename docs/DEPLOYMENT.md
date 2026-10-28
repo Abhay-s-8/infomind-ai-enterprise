@@ -20,8 +20,8 @@ Two blueprints are provided. Render's own validator (`render blueprints validate
 
 | File | Needs a card? | Data | Use it for |
 |---|---|---|---|
-| `render.yaml` (default) | **No** (validated: accepted) | Resets whenever the free instance restarts or wakes from sleep | A demo that is always in a clean, consistent state |
-| `render.paid.yaml` | **Yes**: without a payment method Render rejects it with `need_payment_info` | Persists on a 1 GB disk | Keeping uploads, users and vectors |
+| `render.yaml` (default) | **No** (validated: accepted) | Free web service + Render's free PostgreSQL: the database persists (until it expires, see below); original files and the vector index reset on every restart | A free, working demo with persistent users and documents |
+| `render.paid.yaml` | **Yes**: without a payment method Render rejects it with `need_payment_info` | Everything persists on a 1 GB disk | Durable data, no expiry |
 
 1. In your Render project choose **New, then Blueprint**, connect GitHub and select `Abhay-s-8/infomind-ai-enterprise`, branch `main`. (For the paid file, set the Blueprint file path to `render.paid.yaml` after adding a payment method under Account Settings, Billing.)
 2. When prompted, enter `INITIAL_ADMIN_EMAIL` and `INITIAL_ADMIN_PASSWORD` (at least 10 characters; use a **new** password). `JWT_SECRET` is generated for you.
@@ -30,7 +30,15 @@ Two blueprints are provided. Render's own validator (`render blueprints validate
 
 On every start the container runs the database migration, creates the admin if it does not exist, trains the classifier if none is active (`AUTO_TRAIN`) and adds the synthetic demo documents (`SEED_DEMO`). All are safe to repeat. Set `SEED_DEMO` to `false` for real use.
 
-**What the free variant means in practice** (the persistence behaviour is by design; the sleep behaviour is Render's, check Render's current free-tier terms): free web services sleep after a period of inactivity and take a while to wake, and the app starts from empty each time (about 12 seconds locally to migrate, train and seed). Anything uploaded, any users the admin created, and review decisions are lost on each restart; the admin account and the 14 demo documents come back. The `JWT_SECRET` stays the same, so an old browser session simply gets a 401 and asks you to sign in again.
+**What the free variant means in practice.** Render's terms for free services (from render.com/docs/free): a free web service spins down after 15 minutes without traffic and takes about a minute to start again; it gets 750 free instance hours per month; its filesystem is lost on every restart, redeploy or spin-down. A free PostgreSQL database holds 1 GB, has no backups, **expires 30 days after creation and is deleted after a further 14-day grace period**; only one free database is allowed per workspace.
+
+| Survives a restart (in the database) | Lost on every restart |
+|---|---|
+| Users and roles, documents and their extracted text, classifications, reviews, entities, analytics, audit log, conversations | The original uploaded file (download answers "missing", reprocess answers 409 "upload it again"); the trained model file (retrained at start, one extra model version each time) |
+
+The vector index also lives on temporary storage, so `start.sh` rebuilds it from the stored text at every start (`AUTO_REINDEX`, `python -m app.cli reindex --if-needed`); search keeps working. Verified locally against a real PostgreSQL by discarding the container and starting a new one on the same database.
+
+**The database expiry is the catch.** The database created for this deployment expires on **2026-11-27** (Render emails you before that). If it is deleted the API stops starting, because the migration cannot connect. To recover on the free plan: delete the expired database, create a new free one (same name, `render.yaml` does this), and update the service's `DATABASE_URL`; the data in it is lost (there are no backups). Upgrading the database to a paid plan in the Render dashboard before the end of the grace period keeps it. The `JWT_SECRET` is stable, so browser sessions survive restarts.
 
 Design choices (both files):
 - **Registration is off** (`ENABLE_REGISTRATION=false`). Only the admin can create accounts.
@@ -39,7 +47,7 @@ Design choices (both files):
 - The data directory is created and handed to an unprivileged user at start-up; the app does not run as root.
 - Paid file only: one persistent disk at `/var/data` for the SQLite database, uploads, vectors and model, which needs a single instance.
 
-**Cost** (approximate, from a web search of Render's pricing; check render.com/pricing): the free file costs nothing. The paid file's `0.5c-512mb` web service is about $7 per month plus about $0.25 per month for the 1 GB disk. Measured locally: migrate + train + seed peaked at about 220 MB and the running API used about 180-235 MB, so 512 MB fits, but a large upload could need a bigger plan.
+**Cost** (approximate, from a web search of Render's pricing; check render.com/pricing): the free file costs nothing (no card). The paid file's `0.5c-512mb` web service is about $7 per month plus about $0.25 per month for the 1 GB disk. Measured locally: migrate + train + seed peaked at about 220 MB and the running API used about 180-235 MB, so 512 MB fits, but a large upload could need a bigger plan.
 
 ## 2. Web interface on Vercel
 The project `infomind-ai-enterprise` is already linked to the GitHub repo (root directory `frontend`) and redeploys on every push to `main`.

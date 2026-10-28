@@ -147,6 +147,8 @@ def download(document_id: str, request: Request, user: User = Depends(get_curren
 def reprocess(document_id: str, request: Request, background: BackgroundTasks,
               user: User = Depends(require_roles(Role.analyst)), db: Session = Depends(get_db)):
     doc = get_authorized_document(db, user, document_id)
+    if not document_service.storage_path(doc.storage_id).exists():  # refuse before changing the document's state
+        raise AppError(document_service.FILE_GONE, status_code=409, code="file_missing")
     document_service.enqueue(db, doc)
     audit_service.record(db, action="document.reprocess", actor_id=user.id, target_type="document",
                          target_id=doc.id, request=request)

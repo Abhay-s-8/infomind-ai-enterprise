@@ -1,13 +1,23 @@
 # Render Blueprint (FREE plan): the API only. The web interface is hosted on Vercel; see docs/DEPLOYMENT.md.
 #
-# No card is needed for this file. The trade-off: a free instance has no persistent disk and sleeps when idle, so the
-# database, uploads, vectors and trained model live under /tmp and RESET whenever the instance restarts or wakes.
-# start.sh rebuilds the essentials on every start (migration, admin, classifier, synthetic demo documents), so the
-# app is always in a consistent state, but anything uploaded or created in the UI is lost. For persistent data add a
-# payment method in Render and use render.paid.yaml instead (choose it as the Blueprint file path).
+# Free services only: a free web service plus Render's free PostgreSQL. The web service has no persistent disk and
+# sleeps after 15 idle minutes, so uploaded ORIGINAL FILES, the vector index and the trained model live under /tmp and
+# reset whenever it restarts or wakes. The database persists: users, documents, extracted text, classifications,
+# reviews and the audit log survive. start.sh rebuilds the rest on every start (admin if missing, classifier, vector
+# index from the stored text, demo documents). Search keeps working; the original file of an uploaded document is
+# gone after a restart (download and reprocess say so).
+# LIMIT: Render deletes a free database 30 days after creation plus a 14-day grace period; only one free database is
+# allowed per workspace and there are no backups. For durable data use render.paid.yaml (needs a card).
 #
 # Ollama cannot run on Render, so the AI assistant and neural semantic embeddings are OFF here (keyword + lexical
 # search, classification, entities, analytics and the rest work).
+databases:
+  - name: infomind-db
+    plan: free                  # expires 30 days after creation (14-day grace, then deleted), 1 GB, no backups
+    databaseName: infomind
+    user: infomind
+    postgresMajorVersion: "16"
+
 services:
   - type: web
     name: infomind-api
@@ -32,7 +42,11 @@ services:
       - key: DATA_DIR
         value: /tmp/infomind    # created at start-up and handed to the unprivileged app user
       - key: DATABASE_URL
-        value: sqlite:////tmp/infomind/infomind.db
+        fromDatabase:           # Render's free PostgreSQL: users, documents, text, results and audit survive restarts
+          name: infomind-db
+          property: connectionString
+      - key: AUTO_REINDEX
+        value: "true"           # the vector index lives on temporary storage: rebuild it from the stored text at start
       - key: STORAGE_DIR
         value: /tmp/infomind/uploads
       - key: MODEL_DIR

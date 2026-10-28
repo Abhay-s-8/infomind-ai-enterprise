@@ -144,12 +144,42 @@ def process_document(db: Session, document_id: str) -> tuple[bool, bool]:
             return False, retryable
         set_status(db, doc, DocStatus.completed)
         return True, False
-    except (extraction_service.ValidationError, FileNotFoundError, ValueError) as exc:
+    except FileNotFoundError:  # never echo the exception: it contains a server path
+        return _fail(db, doc, FILE_GONE)
+    except (extraction_service.ValidationError, ValueError) as exc:
         return _fail(db, doc, f"Could not read the document: {exc}" if not isinstance(exc, extraction_service.ValidationError)
                      else str(exc))
     except Exception:  # noqa: BLE001 - logged in full; users get a generic message without paths or internals
         log.exception("Processing failed for document %s", document_id)
         return _fail(db, doc, "Processing failed unexpectedly. See server logs.")
+
+
+FILE_GONE = ("The original file is no longer stored (the host's temporary storage was reset). Upload it again to "
+             "reprocess it. Its extracted text and search entries are unaffected.")
+
+
+def rebuild_vectors(db: Session, *, force: bool = False) -> int:
+    """Re-create the vector index from the chunk text stored in SQL (SQL is the source of truth). Needed when the vector
+    store lives on temporary storage that was reset while the database survived. Returns the number of chunks indexed;
+    does nothing when the index already holds every chunk, unless `force`."""
+    docs = list(db.scalars(select(Document).where(Document.status == DocStatus.completed.value, Document.chunk_count > 0)))
+    expected = sum(d.chunk_count for d in docs)
+    store = get_vector_store()
+    if not force and (expected == 0 or store.count() == expected):
+        return 0
+    rebuilt = 0
+    for doc in docs:
+        rows = list(db.scalars(select(DocumentChunk).where(DocumentChunk.document_id == doc.id)
+                               .order_by(DocumentChunk.chunk_index)))
+        if not rows:
+            continue
+        vectors = get_embedder().embed([r.text for r in rows])
+        store.delete_document(doc.id)
+        store.upsert([(r.id, v, {"document_id": doc.id, "chunk_id": r.id, "owner_id": doc.owner_id,
+                                  "page": r.page, "chunk_index": r.chunk_index, "extension": doc.extension})
+                      for r, v in zip(rows, vectors, strict=True)])
+        rebuilt += len(rows)
+    return rebuilt
 
 
 def _fail(db: Session, doc: Document, message: str) -> tuple[bool, bool]:

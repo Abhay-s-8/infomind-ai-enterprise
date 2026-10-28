@@ -2,6 +2,7 @@
 
   init-db        create tables (development convenience; production uses `alembic upgrade head`)
   create-admin   create an administrator   (--email, --password or INITIAL_ADMIN_PASSWORD, [--if-missing])
+  reindex        rebuild the vector index from stored chunk text   (--if-needed to skip when complete)
   seed-demo      insert the SYNTHETIC demo corpus for a user and process it
   train          train + activate the classifier (synthetic data, or --csv path; --if-missing to skip if trained)
   export-data    write sample training CSV and demo documents under data/
@@ -67,6 +68,18 @@ def cmd_train(a):
         print(f"  note: {mv.dataset_info['caveat']}")
 
 
+def cmd_reindex(a):
+    from app.core.errors import ServiceUnavailable
+    from app.services import document_service
+
+    try:
+        with SessionLocal() as db:
+            n = document_service.rebuild_vectors(db, force=not a.if_needed)
+    except ServiceUnavailable as exc:
+        sys.exit(f"Reindex failed: {exc.message}")
+    print(f"Vector index rebuilt from stored text: {n} chunks." if n else "Vector index already complete; nothing to do.")
+
+
 def cmd_seed_demo(a):
     from app.ml import demo_corpus
     from app.services import document_service
@@ -130,6 +143,9 @@ def main():
     s.add_argument("--csv")
     s.add_argument("--if-missing", action="store_true", help="skip when an active model with an artifact exists")
     s.set_defaults(fn=cmd_train)
+    s = sub.add_parser("reindex")
+    s.add_argument("--if-needed", action="store_true", help="only rebuild when the index is missing chunks")
+    s.set_defaults(fn=cmd_reindex)
     s = sub.add_parser("seed-demo")
     s.add_argument("--email", default=get_settings().dev_admin_email or "admin@example.com")
     s.set_defaults(fn=cmd_seed_demo)
