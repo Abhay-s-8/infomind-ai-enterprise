@@ -1,11 +1,9 @@
 /* Hallmark · shape: app screen · genre: modern-minimal · theme: Console (deal 2/3, seed enterprise-document-search-classification-a767·ce1c1c3b·2026-10-28·r0) · redesign: full
- * nav: sidebar kept (8 destinations), amber marks the current page · signature: the cited answer, an answer set beside the passages it came from · states: loading, empty, error, full · console: reskinned in pixel-retroui at the owner's request (arcade night, cream cartridge)
- * axes: dark/pixel-sans/chromatic-yellow · posture: restrained · contrast: pass · v2.0.0 */
+ * nav: sidebar kept (8 destinations), hairline, amber marks the current page · signature: the cited answer, an answer set beside the passages it came from · states: loading, empty, error, full · console: graphite (dark), paper (light)
+ * axes: dark/grotesk-sans/chromatic-amber · posture: restrained · contrast: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V4 · weakest: S, the dashboard charts are drawn from the project's own recharts data and keep its axes */
 /* Hallmark · dropped <select aria-label="Date range", <Link to="/documents" className="text-accent underline"> · restyled in place: the same date-range control and upload link, now through the shared Select and the .link class */
 /* Hallmark · reworded "Find answers in your documents, with the sources to check them." to "Find answers in your documents" · the hero rule keeps the headline short and the lede carries the sources */
-@import url("pixel-retroui/dist/index.css");
-@import url("pixel-retroui/dist/fonts.css");
 @import url("./tokens.css");
 @tailwind base;
 @tailwind components;
@@ -21,13 +19,13 @@
     font-family: var(--font-body); font-size: var(--text-md); line-height: 1.55;
     -webkit-font-smoothing: antialiased; caret-color: var(--color-accent);
   }
-  h1, h2, h3 { font-family: var(--font-display); font-weight: var(--display-weight); font-synthesis: none; letter-spacing: var(--tracking-display); line-height: 1.2; overflow-wrap: break-word; min-width: 0; text-wrap: balance; }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: var(--display-weight); font-synthesis: none; letter-spacing: var(--tracking-display); line-height: 1.1; overflow-wrap: break-word; min-width: 0; text-wrap: balance; }
   p { text-wrap: pretty; }
-  a { text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+  a { text-decoration-thickness: 1px; text-underline-offset: 0.16em; }
   button, input, select, textarea { font: inherit; }
   svg { display: block; }
-  ::selection { background: var(--color-accent); color: var(--color-accent-ink); }
-  :focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+  ::selection { background: color-mix(in oklab, var(--color-accent) 25%, transparent); }
+  :focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 4px; }
   button:not(:disabled), select:not(:disabled), summary { cursor: pointer; }
   table { font-variant-numeric: tabular-nums; }
 }
@@ -35,29 +33,13 @@
 @layer components {
   /* What an instrument or the system wrote: ids, scores, timestamps, counts, passages. */
   .measured { font-family: var(--font-outlier); font-size: var(--text-sm); font-variant-numeric: tabular-nums slashed-zero; }
-  .reading { font-family: var(--font-display); font-weight: 400; line-height: 1; font-variant-numeric: tabular-nums; }
-  /* The pixel-retroui frame: a hard border, a stepped corner and a one-colour drop shadow, all from the tokens. */
-  .pixel-panel { background: var(--color-paper-2); border: 4px solid var(--color-pixel); box-shadow: 2px 2px 0 2px var(--color-shadow), -2px -2px 0 2px var(--color-paper-2); }
-  .pixel-field { background: var(--color-paper-3); color: var(--color-ink); border: 3px solid var(--color-pixel); box-shadow: 2px 2px 0 0 var(--color-shadow); transition: border-color var(--dur-micro) var(--ease-out); }
-  .pixel-field:hover { border-color: var(--color-accent); }
-  .pixel-field:focus, .pixel-field:focus-within { border-color: var(--color-accent); }
-  /* One surface cut into panels by 4px seams. */
-  .panels { display: grid; gap: var(--space-2xs); color: var(--color-paper-2); background: var(--color-pixel); border: 4px solid var(--color-pixel); box-shadow: 2px 2px 0 2px var(--color-shadow); }
-  .panels > * { background: var(--color-paper-2); color: var(--color-ink); min-width: 0; }
+  .reading { font-family: var(--font-outlier); font-weight: 400; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums slashed-zero; }
+  /* One surface cut into panels by 1px seams. */
+  .panels { display: grid; gap: var(--rule-hair); background: var(--color-rule); border: var(--rule-hair) solid var(--color-rule); border-radius: var(--radius-card); overflow: hidden; }
+  .panels > * { background: var(--color-paper-2); min-width: 0; }
   .link { text-decoration: underline; text-decoration-color: var(--color-rule-2); transition: color var(--dur-micro) var(--ease-out), text-decoration-color var(--dur-micro) var(--ease-out); }
   .link:hover { color: var(--color-accent); text-decoration-color: var(--color-accent); }
-  mark { background: var(--color-accent-soft); color: inherit; padding: 0 var(--space-3xs); }
-  /* A link that looks like a pixel-retroui button (the library button is a <button>, so a link cannot use it). */
-  .pixel-btn { --btn-bg: var(--color-paper-2); --btn-fg: var(--color-ink); display: inline-flex; align-items: center; justify-content: center; min-height: 2.5rem; padding: var(--space-xs) var(--space-sm); white-space: nowrap; font-family: var(--font-display); font-size: var(--text-sm); text-decoration: none; background: var(--btn-bg); color: var(--btn-fg); border: 4px solid var(--color-pixel); box-shadow: 2px 2px 0 2px var(--color-shadow), -2px -2px 0 2px var(--btn-bg); transition: filter var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
-  .pixel-btn:hover { filter: brightness(1.12); }
-  .pixel-btn:active { transform: translateY(2px); box-shadow: 2px 2px 0 2px var(--btn-bg), -2px -2px 0 2px var(--btn-bg); }
-  .pixel-btn-primary { --btn-bg: var(--color-accent); --btn-fg: var(--color-accent-ink); }
-  .pixel-btn-ghost { --btn-bg: transparent; --btn-fg: var(--color-muted); border-color: transparent; box-shadow: none; }
-  .pixel-btn-ghost:hover { --btn-fg: var(--color-ink); border-color: var(--color-pixel); }
-  /* pixel-retroui buttons: hover and disabled, which the library leaves to the page */
-  [class*="Button-module__pixelButton"] { transition: filter var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
-  [class*="Button-module__pixelButton"]:hover:not(:disabled) { filter: brightness(1.12); }
-  [class*="Button-module__pixelButton"]:disabled { opacity: 0.5; cursor: not-allowed; }
+  mark { background: var(--color-accent-soft); color: inherit; border-radius: 2px; padding: 0 1px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

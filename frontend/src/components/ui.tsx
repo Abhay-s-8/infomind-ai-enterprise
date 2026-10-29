@@ -1,54 +1,48 @@
 import { AlertTriangle, Inbox, Loader2 } from "lucide-react";
-import { Button as PixelButton, Card as PixelCard, InputStyles } from "pixel-retroui";
 import { forwardRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from "react";
 import { cn } from "../lib/utils";
 
-// Yellow (red-orange in light) means a person, cool means the system; ok and danger are for status only.
+// Amber means a person (work waiting on someone), cool means the system; ok and danger are for status only.
 type Tone = "ok" | "warn" | "danger" | "info" | "muted" | "accent";
 const toneClass: Record<Tone, string> = {
   ok: "bg-ok-soft text-ok", warn: "bg-accent-soft text-accent", danger: "bg-danger-soft text-danger",
   info: "bg-cool-soft text-cool", muted: "bg-sunk text-muted", accent: "bg-accent-soft text-accent",
 };
 
-/** A chip carries state only: a pixel outline in the tone's own colour. */
+/** A chip carries state only: the label face inside a hairline, tinted by what it means. */
 export function Badge({ tone = "muted", children }: { tone?: Tone; children: ReactNode }) {
-  return <span className={cn("inline-flex items-center border-2 border-current px-1.5 py-0.5 font-display text-xs", toneClass[tone])}>{children}</span>;
+  return <span className={cn("inline-flex items-center rounded border border-border px-1.5 py-0.5 text-xs font-medium", toneClass[tone])}>{children}</span>;
 }
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
-// The pixel-retroui button takes its colours as props; each variant names tokens, never literals.
-const buttonColors: Record<Variant, { bg?: string; textColor?: string; shadow?: string; borderColor?: string }> = {
-  primary: { bg: "var(--color-accent)", textColor: "var(--color-accent-ink)" },
-  secondary: {},
-  ghost: { bg: "transparent", textColor: "var(--color-muted)", shadow: "transparent", borderColor: "transparent" },
-  danger: { bg: "var(--color-bad-soft)", textColor: "var(--color-bad)", borderColor: "var(--color-bad)" },
-};
-
 export function Button({ variant = "primary", loading, className, children, disabled, ...rest }:
-  ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; loading?: boolean }) {
+  ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "ghost" | "danger"; loading?: boolean }) {
+  const styles = {
+    primary: "border border-accent bg-accent text-accent-fg hover:bg-accent/90 active:bg-accent/80",
+    secondary: "border border-border-strong bg-surface text-fg hover:bg-sunk active:bg-bg",
+    ghost: "border border-transparent text-muted hover:bg-sunk hover:text-fg active:bg-bg",
+    danger: "border border-transparent bg-danger-soft text-danger hover:border-danger/50 active:bg-danger/20",
+  }[variant];
   return (
-    <PixelButton {...rest} {...buttonColors[variant]} disabled={disabled || loading}
-      className={cn("!m-0 inline-flex min-h-9 items-center justify-center gap-2 !px-3 !py-1.5 text-sm", className)}>
+    <button {...rest} disabled={disabled || loading}
+      className={cn("inline-flex min-h-9 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-micro ease-out disabled:cursor-not-allowed disabled:opacity-50", styles, className)}>
       {loading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
       {children}
-    </PixelButton>
+    </button>
   );
 }
 
-/** A pixel-retroui card with an optional title bar. */
+/** A hairline panel one step up from the ground. */
 export function Card({ title, action, children, className }: { title?: string; action?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <PixelCard className={cn("!m-0 !p-0", className)}>
-      <section>
-        {(title || action) && (
-          <header className="flex items-center justify-between gap-2 border-b-4 border-pixel px-4 py-3">
-            {title && <h2 className="text-base">{title}</h2>}
-            {action}
-          </header>
-        )}
-        <div className="p-4">{children}</div>
-      </section>
-    </PixelCard>
+    <section className={cn("rounded-lg border border-border bg-surface", className)}>
+      {(title || action) && (
+        <header className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
+          {title && <h2 className="text-base">{title}</h2>}
+          {action}
+        </header>
+      )}
+      <div className="p-4">{children}</div>
+    </section>
   );
 }
 
@@ -57,7 +51,7 @@ export function PageHeader({ title, description, action }: { title: string; desc
     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
         <h1 className="text-2xl">{title}</h1>
-        {description && <p className="mt-2 max-w-2xl text-sm text-muted">{description}</p>}
+        {description && <p className="mt-1.5 max-w-2xl text-sm text-muted">{description}</p>}
       </div>
       {action}
     </div>
@@ -86,9 +80,9 @@ export function Spinner({ label = "Loading" }: { label?: string }) {
 /** `bare` drops the box, for use inside a panel that already has one. */
 export function EmptyState({ title, children, action, bare }: { title: string; children?: ReactNode; action?: ReactNode; bare?: boolean }) {
   return (
-    <div className={cn("flex flex-col items-center gap-2 px-6 py-10 text-center", !bare && "pixel-panel")}>
-      <Inbox className="h-6 w-6 text-muted" aria-hidden />
-      <p className="font-display">{title}</p>
+    <div className={cn("flex flex-col items-center gap-2 px-6 py-10 text-center", !bare && "rounded-lg border border-border bg-surface")}>
+      <Inbox className="h-5 w-5 text-muted" aria-hidden />
+      <p className="font-medium">{title}</p>
       {children && <p className="max-w-md text-sm text-muted">{children}</p>}
       {action}
     </div>
@@ -98,7 +92,7 @@ export function EmptyState({ title, children, action, bare }: { title: string; c
 export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
   const message = error instanceof Error ? error.message : "Something went wrong.";
   return (
-    <div role="alert" className="flex items-start gap-3 border-4 border-danger bg-danger-soft p-4 text-sm">
+    <div role="alert" className="flex items-start gap-3 rounded-lg border border-danger/50 bg-danger-soft p-4 text-sm">
       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-danger" aria-hidden />
       <div className="flex-1">
         <p>{message}</p>
@@ -118,17 +112,14 @@ export function Field({ label, error, children }: { label: string; error?: strin
   );
 }
 
-// forwardRef is required so react-hook-form's register() can attach its ref. The pixel-retroui Input cannot take one,
-// so this reuses its exported frame and field styles around a plain input.
-export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input({ className, ...props }, ref) {
-  return (
-    <div className={cn(InputStyles.pixelContainer, "!block w-full", className)}>
-      <input {...props} ref={ref} className={cn(InputStyles.pixelInput, "w-full !py-2 text-sm placeholder:text-muted disabled:opacity-50")} />
-    </div>
-  );
+// Inputs sit on the deepest step inside an edge that reads against the panel (3:1).
+const inputClass = "w-full rounded-md border border-edge bg-sunk px-3 py-2 text-sm placeholder:text-muted transition-colors duration-micro ease-out hover:border-fg-2 focus:border-accent disabled:opacity-50";
+// forwardRef is required so react-hook-form's register() can attach its ref
+export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input(props, ref) {
+  return <input {...props} ref={ref} className={cn(inputClass, props.className)} />;
 });
-export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(function Select({ className, ...props }, ref) {
-  return <select {...props} ref={ref} className={cn("pixel-field w-full px-3 py-2 text-sm disabled:opacity-50", className)} />;
+export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(function Select(props, ref) {
+  return <select {...props} ref={ref} className={cn(inputClass, props.className)} />;
 });
 
 export function Table({ head, children }: { head: string[]; children: ReactNode }) {
@@ -136,9 +127,9 @@ export function Table({ head, children }: { head: string[]; children: ReactNode 
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
         <thead className="text-muted">
-          <tr>{head.map((h) => <th key={h} scope="col" className="border-b-4 border-pixel px-3 py-2 font-display text-xs font-normal">{h}</th>)}</tr>
+          <tr>{head.map((h) => <th key={h} scope="col" className="border-b border-border-strong px-3 py-2 font-medium">{h}</th>)}</tr>
         </thead>
-        <tbody className="divide-y-2 divide-border [&>tr]:transition-colors [&>tr]:duration-micro [&>tr:hover]:bg-sunk">{children}</tbody>
+        <tbody className="divide-y divide-border [&>tr]:transition-colors [&>tr]:duration-micro [&>tr:hover]:bg-sunk">{children}</tbody>
       </table>
     </div>
   );

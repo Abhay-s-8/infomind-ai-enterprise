@@ -5,46 +5,29 @@
   --text-display-s: 1.44rem; --text-display: 1.728rem; --text-section: 1.2rem; --text-title: 1rem; --text-lead: 1rem;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --ease-in: cubic-bezier(0.7, 0, 0.84, 0); --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --dur-micro: 120ms; --dur-short: 220ms; --dur-long: 420ms;
+  --color-error: oklch(70% 0.17 25); --color-success: oklch(76% 0.15 150);
   --container: 1440px; --gutter: 64px; --gap-columns: 32px; --section-gap-s: 120px; --section-gap: 144px; --section-gap-l: 176px;
   --z-base: 1; --z-raised: 10; --z-dropdown: 100; --z-sticky: 200; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500; --z-tooltip: 600;
-
-  /* arcade night: deep indigo in three steps, warm white ink, one yellow for a person, cyan for the system */
-  --color-paper: oklch(17% 0.045 285); --color-paper-2: oklch(23% 0.055 285); --color-paper-3: oklch(12.5% 0.04 285);
-  --color-ink: oklch(96% 0.02 95); --color-ink-2: oklch(86% 0.03 95); --color-muted: oklch(76% 0.05 285);
-  --color-rule: oklch(34% 0.06 285); --color-rule-2: oklch(46% 0.07 285); --color-edge: oklch(64% 0.08 285);
-  --color-pixel: oklch(88% 0.04 95); --color-shadow: oklch(8% 0.03 285);
-  --color-accent: oklch(84% 0.17 90); --color-accent-ink: oklch(18% 0.05 90); --color-accent-soft: oklch(32% 0.09 90); --color-focus: oklch(84% 0.17 90);
-  --color-cool: oklch(80% 0.13 205); --color-cool-soft: oklch(30% 0.06 215);
-  --color-ok: oklch(80% 0.19 150); --color-ok-soft: oklch(28% 0.06 150); --color-bad: oklch(72% 0.2 20); --color-bad-soft: oklch(28% 0.07 20);
-  --color-error: oklch(72% 0.2 20); --color-success: oklch(80% 0.19 150);
-
-  --font-display: "Minecraft", "Host Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Host Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --color-paper: oklch(17% 0.008 250); --color-paper-2: oklch(21% 0.009 250); --color-paper-3: oklch(13.5% 0.007 250);
+  --color-ink: oklch(95% 0.005 250); --color-ink-2: oklch(83% 0.008 250); --color-muted: oklch(71% 0.01 250);
+  --color-rule: oklch(31% 0.01 250); --color-rule-2: oklch(42% 0.012 250); --color-edge: oklch(58% 0.012 250);
+  --color-accent: oklch(82% 0.15 80); --color-accent-ink: oklch(18% 0.04 75); --color-accent-soft: oklch(29% 0.05 80); --color-focus: oklch(82% 0.15 80);
+  --color-cool: oklch(77% 0.12 245); --color-cool-soft: oklch(29% 0.05 245);
+  --color-ok: oklch(76% 0.15 150); --color-ok-soft: oklch(24.5% 0.03 150); --color-bad: oklch(70% 0.17 25); --color-bad-soft: oklch(24.5% 0.035 25);
+  --font-display: "Host Grotesk", ui-sans-serif, system-ui, sans-serif; --font-body: var(--font-display);
   --font-outlier: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
-  --radius-card: 0; --radius-pill: 0; --rule-hair: 1px;
-  --tracking-display: 0.01em; --display-weight: 400;
-
-  /* pixel-retroui reads these; they follow the theme through the tokens above */
-  --bg-button: var(--color-paper-2); --text-button: var(--color-ink); --shadow-button: var(--color-shadow); --border-button: var(--color-pixel);
-  --bg-card: var(--color-paper-2); --text-card: var(--color-ink); --shadow-card: var(--color-shadow); --border-card: var(--color-pixel);
-  --bg-input: var(--color-paper-3); --text-input: var(--color-ink); --border-input: var(--color-pixel);
-  --bg-textarea: var(--color-paper-3); --text-textarea: var(--color-ink); --border-textarea: var(--color-pixel);
-  --color-progressbar: var(--color-accent); --border-progressbar: var(--color-pixel);
-  --bubble-bg-color: var(--color-paper-3); --bubble-text-color: var(--color-ink); --bubble-border-color: var(--color-pixel);
-  --bg-popup: var(--color-paper-2); --bg-popup-base: var(--color-paper-3); --text-popup: var(--color-ink);
-  --bg-dropdown: var(--color-paper-2); --bg-dropdown-hover: var(--color-paper-3); --text-dropdown: var(--color-ink); --border-dropdown: var(--color-pixel); --shadow-dropdown: var(--color-shadow);
-  --bg-accordion: var(--color-paper-2); --text-accordion: var(--color-ink); --shadow-accordion: var(--color-shadow);
+  --radius-card: 10px; --radius-pill: 6px; --rule-hair: 1px;
+  --shadow-card: none;
+  --tracking-display: -0.03em; --display-weight: 500;
 }
 
-/* cream cartridge: warm paper, ink-dark outlines, a red-orange for a person, blue for the system */
 :root[data-theme="light"] {
   color-scheme: light;
-  --color-paper: oklch(95.5% 0.03 95); --color-paper-2: oklch(99% 0.015 95); --color-paper-3: oklch(91% 0.035 95);
-  --color-ink: oklch(20% 0.05 285); --color-ink-2: oklch(32% 0.05 285); --color-muted: oklch(44% 0.05 285);
-  --color-rule: oklch(80% 0.04 95); --color-rule-2: oklch(65% 0.05 95); --color-edge: oklch(40% 0.05 285);
-  --color-pixel: oklch(20% 0.05 285); --color-shadow: oklch(20% 0.05 285);
-  --color-accent: oklch(52% 0.19 35); --color-accent-ink: oklch(99% 0.01 95); --color-accent-soft: oklch(90% 0.07 60); --color-focus: oklch(52% 0.19 35);
-  --color-cool: oklch(46% 0.14 240); --color-cool-soft: oklch(90% 0.04 225);
-  --color-ok: oklch(42% 0.14 150); --color-ok-soft: oklch(91% 0.06 150); --color-bad: oklch(50% 0.2 25); --color-bad-soft: oklch(92% 0.05 25);
-  --color-error: oklch(50% 0.2 25); --color-success: oklch(42% 0.14 150);
+  --color-paper: oklch(97.5% 0.006 85); --color-paper-2: oklch(99.5% 0.004 85); --color-paper-3: oklch(94.5% 0.007 85);
+  --color-ink: oklch(19% 0.01 60); --color-ink-2: oklch(32% 0.01 60); --color-muted: oklch(45% 0.012 70);
+  --color-rule: oklch(88% 0.008 85); --color-rule-2: oklch(78% 0.01 85); --color-edge: oklch(58% 0.012 70);
+  --color-accent: oklch(50% 0.13 70); --color-accent-ink: oklch(99% 0.01 85); --color-accent-soft: oklch(92% 0.05 80); --color-focus: oklch(50% 0.13 70);
+  --color-cool: oklch(50% 0.14 250); --color-cool-soft: oklch(92% 0.04 245);
+  --color-ok: oklch(45% 0.13 150); --color-ok-soft: oklch(93% 0.04 150); --color-bad: oklch(50% 0.17 25); --color-bad-soft: oklch(94% 0.03 25);
+  --color-error: oklch(50% 0.17 25); --color-success: oklch(45% 0.13 150);
 }

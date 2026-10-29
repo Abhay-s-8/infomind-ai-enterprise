@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { TextArea } from "pixel-retroui";
 import { useState } from "react";
 import { Badge, Button, Card, EmptyState, ErrorState, PageHeader, SourceNote, Spinner, Table } from "../../components/ui";
 import { ConfusionMatrix } from "../../components/ConfusionMatrix";
@@ -44,7 +43,7 @@ export default function ClassificationPage() {
               <div><dt className="text-muted">Selection</dt><dd>{m.dataset_info.selection_criterion}</dd></div>
               <div><dt className="text-muted">Evaluated on</dt><dd className="measured">{m.dataset_info.evaluation_split}, n={m.metrics.n_evaluated}</dd></div>
             </dl>
-            {m.dataset_info.caveat && <p className="mt-4 border-2 border-accent bg-accent-soft px-3 py-2 text-sm text-accent">{m.dataset_info.caveat}</p>}
+            {m.dataset_info.caveat && <p className="mt-4 rounded-md border border-border bg-accent-soft px-3 py-2 text-sm text-accent">{m.dataset_info.caveat}</p>}
           </Card>
 
           <Card title="Model comparison (held-out test split)">
@@ -74,8 +73,8 @@ export default function ClassificationPage() {
       )}
 
       <Card title="Try the classifier" className="mt-4">
-        <TextArea aria-label="Text to classify" value={text} onChange={(e) => setText(e.target.value)} rows={4} maxLength={50000}
-          placeholder="Paste text to classify…" className="!m-0 w-full text-sm" />
+        <textarea aria-label="Text to classify" value={text} onChange={(e) => setText(e.target.value)} rows={4} maxLength={50000}
+          placeholder="Paste text to classify…" className="w-full rounded-md border border-edge bg-sunk p-3 text-sm placeholder:text-muted transition-colors duration-micro ease-out hover:border-fg-2 focus:border-accent" />
         <div className="mt-3 flex items-center gap-3">
           <Button variant="secondary" disabled={!text.trim() || noModel} loading={predict.isPending} onClick={() => predict.mutate()}>Classify</Button>
           {predict.data && (
