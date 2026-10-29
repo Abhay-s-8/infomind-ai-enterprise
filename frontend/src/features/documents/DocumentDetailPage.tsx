@@ -50,8 +50,8 @@ export default function DocumentDetailPage() {
           </div>
         )} />
       {actionError && <div className="mb-4"><ErrorState error={new Error(actionError)} /></div>}
-      {d.deletion_state === "delete_failed" && <p role="alert" className="mb-4 rounded-md border border-danger/50 bg-danger-soft px-3 py-2 text-sm text-danger">A previous delete did not complete. Delete again to retry.</p>}
-      {d.error_message && <p role="alert" className="mb-4 rounded-md border border-danger/50 bg-danger-soft px-3 py-2 text-sm text-danger">{d.error_message}</p>}
+      {d.deletion_state === "delete_failed" && <p role="alert" className="mb-4 border-2 border-danger bg-danger-soft px-3 py-2 text-sm text-danger">A previous delete did not complete. Delete again to retry.</p>}
+      {d.error_message && <p role="alert" className="mb-4 border-2 border-danger bg-danger-soft px-3 py-2 text-sm text-danger">{d.error_message}</p>}
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card title="Details" className="lg:col-span-1">

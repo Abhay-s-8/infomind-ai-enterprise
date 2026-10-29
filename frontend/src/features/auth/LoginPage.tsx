@@ -51,7 +51,7 @@ export default function LoginPage({ initialMode = "login" }: { initialMode?: Mod
         <div className="w-full max-w-sm">
           <h1 className="text-3xl">InfoMind AI Enterprise</h1>
           <p className="mb-8 mt-2 text-base text-muted">{mode === "login" ? "Sign in to your workspace" : "Create an analyst account"}</p>
-          <div className="rounded-lg border border-border bg-surface p-6">
+          <div className="pixel-panel p-6">
             <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
               {mode === "register" && (
                 <Field label="Full name" error={errors.full_name?.message}><Input {...register("full_name")} autoComplete="name" /></Field>
@@ -62,10 +62,10 @@ export default function LoginPage({ initialMode = "login" }: { initialMode?: Mod
               </Field>
               {error && <p role="alert" className="text-sm text-danger">{error}</p>}
               {notice && <p role="status" className="text-sm text-ok">{notice}</p>}
-              <Button type="submit" loading={isSubmitting} className="w-full">{mode === "login" ? "Sign in" : "Create account"}</Button>
+              <div><Button type="submit" loading={isSubmitting} className="w-full">{mode === "login" ? "Sign in" : "Create account"}</Button></div>
             </form>
             {(registrationOpen || mode === "register") && (
-              <button className="link mt-4 text-sm" onClick={() => { setWanted(mode === "login" ? "register" : "login"); setError(null); }}>
+              <button className="link mt-2 inline-flex min-h-10 items-center text-sm" onClick={() => { setWanted(mode === "login" ? "register" : "login"); setError(null); }}>
                 {mode === "login" ? "Need an account? Register" : "Have an account? Sign in"}
               </button>
             )}

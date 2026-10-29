@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, UploadCloud } from "lucide-react";
+import { ProgressBar } from "pixel-retroui";
 import { useRef, useState, type DragEvent } from "react";
 import { Link } from "react-router-dom";
 import { Badge, Button, Card, EmptyState, ErrorState, Input, PageHeader, Select, Spinner, Table } from "../../components/ui";
@@ -55,7 +56,7 @@ export default function DocumentsPage() {
       <PageHeader title="Documents" description={`Upload ${ALLOWED_EXTENSIONS.join(", ").toUpperCase()} files (max ${MAX_UPLOAD_MB} MB each). Files are validated, de-duplicated, indexed and classified.`} />
 
       <div onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={onDrop}
-        className={`mb-4 flex flex-col items-center gap-2 rounded-lg border border-dashed px-4 py-8 text-center transition-colors duration-micro ease-out ${dragging ? "border-accent bg-accent-soft" : "border-edge bg-surface"}`}>
+        className={`mb-4 flex flex-col items-center gap-2 border-4 border-dashed px-4 py-8 text-center transition-colors duration-micro ease-out ${dragging ? "border-accent bg-accent-soft" : "border-edge bg-surface"}`}>
         <UploadCloud className="h-6 w-6 text-muted" aria-hidden />
         <p className="text-sm">Drag files here or</p>
         <input ref={inputRef} type="file" multiple hidden data-testid="file-input" aria-label="Choose files"
@@ -64,7 +65,7 @@ export default function DocumentsPage() {
         <Button variant="secondary" onClick={() => inputRef.current?.click()} loading={upload.isPending}>Choose files</Button>
         {progress !== null && (
           <div className="w-full max-w-xs" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
-            <div className="h-1.5 overflow-hidden rounded bg-sunk"><div className="h-full bg-accent" style={{ width: `${progress}%` }} /></div>
+            <ProgressBar progress={progress} size="sm" color="var(--color-accent)" borderColor="var(--color-pixel)" className="!m-0" />
             <p className="measured mt-1 text-xs text-muted">{progress}% uploaded</p>
           </div>
         )}

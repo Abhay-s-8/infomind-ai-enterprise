@@ -27,7 +27,7 @@ export default function DashboardPage() {
             <option value={7}>Last 7 days</option><option value={30}>Last 30 days</option><option value={90}>Last 90 days</option>
           </Select>
         } />
-      {data.has_demo_data && <p className="mb-4 rounded-md border border-border bg-accent-soft px-3 py-2 text-sm text-accent">Your workspace contains synthetic demonstration documents (marked “demo”).</p>}
+      {data.has_demo_data && <p className="mb-4 border-2 border-accent bg-accent-soft px-3 py-2 text-sm text-accent">Your workspace contains synthetic demonstration documents (marked “demo”).</p>}
 
       <div className="panels grid-cols-2 lg:grid-cols-5">
         <Stat label="Total documents" value={data.totals.documents} />

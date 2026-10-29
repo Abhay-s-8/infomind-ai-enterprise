@@ -378,7 +378,7 @@ All settings are environment variables (a `.env` file locally). Placeholders are
 - Web app: <https://infomind-ai-enterprise.vercel.app> (Vercel; redeploys on every push to `main`).
 - API: <https://infomind-api.onrender.com> (Render free web service, with a free PostgreSQL).
 - The administrator's email is `admin@example.com`; its password is whatever `INITIAL_ADMIN_PASSWORD` was set to on Render (it is deliberately not written in any file in this repository).
-- Self-registration is currently **off** on the live site (`ENABLE_REGISTRATION=false`), so the landing page shows only "Sign in".
+- Self-registration is currently **on** for the live site (`ENABLE_REGISTRATION=true` in `render.yaml`), so the landing page shows "Create account" beside "Sign in".
 
 **What the free plan means in practice:**
 

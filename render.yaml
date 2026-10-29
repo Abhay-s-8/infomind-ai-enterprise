@@ -34,7 +34,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: ENABLE_REGISTRATION
-        value: "false"          # nobody can self-register on a public URL; the admin creates users
+        value: "true"           # anyone with the URL can create an analyst account; set "false" to leave account creation to the admin
       - key: CORS_ORIGINS
         value: https://infomind-ai-enterprise.vercel.app
       - key: FORWARDED_ALLOW_IPS

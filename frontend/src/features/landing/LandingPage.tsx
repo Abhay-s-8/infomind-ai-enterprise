@@ -42,23 +42,23 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-full">
-      <header className="sticky top-0 z-10 border-b border-border bg-surface">
+      <header className="sticky top-0 z-10 border-b-4 border-pixel bg-surface">
         <div className={`${wrap} flex h-14 items-center gap-4`}>
           <Link to="/" className="flex items-baseline gap-3">
-            <span className="text-base font-medium tracking-tight">InfoMind AI</span>
+            <span className="whitespace-nowrap font-display text-base">InfoMind AI</span>
             <span className="hidden text-xs text-muted sm:inline">Enterprise prototype</span>
           </Link>
           <nav aria-label="Site" className="ml-6 hidden gap-5 text-sm text-muted md:flex">
-            <a href="#features" className="transition-colors duration-micro ease-out hover:text-fg">Features</a>
-            <a href="#how-it-works" className="transition-colors duration-micro ease-out hover:text-fg">How it works</a>
-            <a href="#about" className="transition-colors duration-micro ease-out hover:text-fg">About</a>
+            <a href="#features" className="whitespace-nowrap transition-colors duration-micro ease-out hover:text-fg">Features</a>
+            <a href="#how-it-works" className="whitespace-nowrap transition-colors duration-micro ease-out hover:text-fg">How it works</a>
+            <a href="#about" className="whitespace-nowrap transition-colors duration-micro ease-out hover:text-fg">About</a>
           </nav>
           <div className="ml-auto flex items-center gap-2 text-sm">
             <button onClick={toggleTheme} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`} className="rounded-md p-2 text-muted transition-colors duration-micro ease-out hover:bg-sunk hover:text-fg active:bg-bg">
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
-            <Link to="/login" className="rounded-md border border-transparent px-3 py-1.5 text-muted transition-colors duration-micro ease-out hover:bg-sunk hover:text-fg active:bg-bg">Sign in</Link>
-            {canRegister && <Link to="/register" className="rounded-md border border-accent bg-accent px-3 py-1.5 font-medium text-accent-fg transition-colors duration-micro ease-out hover:bg-accent/90 active:bg-accent/80">Create account</Link>}
+            <Link to="/login" className="pixel-btn pixel-btn-ghost">Sign in</Link>
+            {canRegister && <Link to="/register" className="pixel-btn pixel-btn-primary hidden whitespace-nowrap sm:inline-flex">Create account</Link>}
           </div>
         </div>
       </header>
@@ -69,8 +69,8 @@ export default function LandingPage() {
             <h1 className="text-5xl md:text-6xl">Find answers in your documents</h1>
             <p className="mt-5 max-w-md text-lg text-fg-2">Every answer cites the passages it came from.</p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link to="/login" className="inline-flex min-h-10 items-center rounded-md border border-accent bg-accent px-4 py-2 text-sm font-medium text-accent-fg transition-colors duration-micro ease-out hover:bg-accent/90 active:bg-accent/80">Sign in</Link>
-              {canRegister && <Link to="/register" className="inline-flex min-h-10 items-center rounded-md border border-border-strong bg-surface px-4 py-2 text-sm font-medium transition-colors duration-micro ease-out hover:bg-sunk active:bg-bg">Create account</Link>}
+              <Link to="/login" className="pixel-btn pixel-btn-primary">Sign in</Link>
+              {canRegister && <Link to="/register" className="pixel-btn">Create account</Link>}
               <a href="#how-it-works" className="link px-2 py-2 text-sm text-muted">See how it works</a>
             </div>
             {registrationClosed && <p className="mt-4 text-sm text-muted">New accounts on this site are created by an administrator.</p>}
@@ -130,15 +130,15 @@ export default function LandingPage() {
           </div>
         </Section>
 
-        <section className="border-y border-border bg-sunk">
+        <section className="border-y-4 border-pixel bg-sunk">
           <div className={`${wrap} flex flex-wrap items-center justify-between gap-6 py-12`}>
             <div>
               <h2 className="text-2xl">Ready to try it?</h2>
               <p className="mt-2 text-base text-muted">{canRegister ? "Sign in, or create an account to get started." : "Sign in with the account your administrator gave you."}</p>
             </div>
             <div className="flex gap-3">
-              <Link to="/login" className="inline-flex min-h-10 items-center rounded-md border border-accent bg-accent px-4 py-2 text-sm font-medium text-accent-fg transition-colors duration-micro ease-out hover:bg-accent/90 active:bg-accent/80">Sign in</Link>
-              {canRegister && <Link to="/register" className="inline-flex min-h-10 items-center rounded-md border border-border-strong bg-surface px-4 py-2 text-sm font-medium transition-colors duration-micro ease-out hover:bg-bg active:bg-sunk">Create account</Link>}
+              <Link to="/login" className="pixel-btn pixel-btn-primary">Sign in</Link>
+              {canRegister && <Link to="/register" className="pixel-btn">Create account</Link>}
             </div>
           </div>
         </section>

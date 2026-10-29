@@ -44,10 +44,10 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-full">
-      <aside className={cn("fixed inset-y-0 left-0 z-30 w-60 shrink-0 border-r border-border bg-surface transition-transform duration-short ease-out md:static md:translate-x-0", open ? "translate-x-0" : "-translate-x-full")}>
-        <div className="flex h-14 items-center justify-between border-b border-border px-4">
+      <aside className={cn("fixed inset-y-0 left-0 z-30 w-60 shrink-0 border-r-4 border-pixel bg-surface transition-transform duration-short ease-out md:static md:translate-x-0", open ? "translate-x-0" : "-translate-x-full")}>
+        <div className="flex h-14 items-center justify-between border-b-4 border-pixel px-4">
           <div>
-            <div className="text-base font-medium tracking-tight">InfoMind AI</div>
+            <div className="font-display text-base">InfoMind AI</div>
             <div className="text-xs text-muted">Enterprise prototype</div>
           </div>
           <button className="rounded-md p-2 text-muted hover:bg-sunk hover:text-fg md:hidden" aria-label="Close menu" onClick={() => setOpen(false)}><X className="h-5 w-5" /></button>
@@ -55,7 +55,7 @@ export default function Layout() {
         <nav aria-label="Primary" className="space-y-1 p-3">
           {items.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} onClick={() => setOpen(false)}
-              className={({ isActive }) => cn("flex min-h-9 items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors duration-micro ease-out", isActive ? "bg-accent-soft text-accent" : "text-muted hover:bg-sunk hover:text-fg active:bg-bg")}>
+              className={({ isActive }) => cn("flex min-h-9 items-center gap-3 border-2 px-3 py-2 font-display text-sm transition-colors duration-micro ease-out", isActive ? "border-accent bg-accent-soft text-accent" : "border-transparent text-muted hover:border-pixel hover:text-fg active:bg-bg")}>
               <Icon className="h-4 w-4" aria-hidden /> {label}
             </NavLink>
           ))}
@@ -64,13 +64,13 @@ export default function Layout() {
       {open && <div className="fixed inset-0 z-20 bg-bg/80 md:hidden" onClick={() => setOpen(false)} aria-hidden />}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-border bg-surface px-4">
+        <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b-4 border-pixel bg-surface px-4">
           <button className="rounded-md p-2 text-muted hover:bg-sunk hover:text-fg md:hidden" aria-label="Open menu" onClick={() => setOpen(true)}><Menu className="h-5 w-5" /></button>
           {analystView && (
             <form onSubmit={submitSearch} role="search" className="relative max-w-md flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted" aria-hidden />
               <input value={q} onChange={(e) => setQ(e.target.value)} aria-label="Global search" placeholder="Search documents…"
-                className="w-full rounded-md border border-edge bg-sunk py-2 pl-9 pr-3 text-sm placeholder:text-muted transition-colors duration-micro ease-out hover:border-fg-2 focus:border-accent" />
+                className="w-full pixel-field py-2 pl-9 pr-3 text-sm placeholder:text-muted" />
             </form>
           )}
           <div className="ml-auto flex items-center gap-3 text-sm">

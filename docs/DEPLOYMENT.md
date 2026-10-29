@@ -41,7 +41,7 @@ The vector index also lives on temporary storage, so `start.sh` rebuilds it from
 **The database expiry is the catch.** The database created for this deployment expires on **2026-11-27** (Render emails you before that). If it is deleted the API stops starting, because the migration cannot connect. To recover on the free plan: delete the expired database, create a new free one (same name, `render.yaml` does this), and update the service's `DATABASE_URL`; the data in it is lost (there are no backups). Upgrading the database to a paid plan in the Render dashboard before the end of the grace period keeps it. The `JWT_SECRET` is stable, so browser sessions survive restarts.
 
 Design choices (both files):
-- **Registration is off** (`ENABLE_REGISTRATION=false`). Only the admin can create accounts.
+- **Registration is on** (`ENABLE_REGISTRATION=true`): anyone with the URL can create an *analyst* account, which is what makes "Create account" appear on the site. Set it to `false` to leave account creation to the admin.
 - **Production mode:** no `/docs` and no `/openapi.json`; a weak or default `JWT_SECRET` stops the app from starting.
 - **`CORS_ORIGINS`** allows only the Vercel URL. If you use another domain, change it.
 - The data directory is created and handed to an unprivileged user at start-up; the app does not run as root.
